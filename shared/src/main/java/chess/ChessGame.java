@@ -1,6 +1,8 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -9,16 +11,21 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
-
+    private TeamColor turn;
+    private ChessBoard board;
     public ChessGame() {
-
+        board = new ChessBoard();
+        board.resetBoard();
+        turn = TeamColor.WHITE;
     }
+
 
     /**
      * @return Which team's turn it is
      */
+    //getter
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return turn;
     }
 
     /**
@@ -26,8 +33,9 @@ public class ChessGame {
      *
      * @param team the team whose turn it is
      */
+    //setter
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        turn = team;
     }
 
     /**
@@ -46,7 +54,23 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece startPiece = board.getPiece(startPosition);
+        //no piece at position
+        if (startPiece == null){
+            Collection<ChessMove> emptyMoves = new HashSet<>();
+            return emptyMoves;
+        }
+        //get potential moves
+        Collection<ChessMove> moves = startPiece.pieceMoves(board, startPosition);
+        //piece color
+        ChessGame.TeamColor colorPiece = startPiece.getTeamColor();
+        //doesn't endanger the king
+        if (!isInCheck(colorPiece)) {
+            return moves;
+        }
+        //endangers the king
+
+        return new HashSet<>();
     }
 
     /**
@@ -66,8 +90,79 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessPosition positionKing = findKing(teamColor);
+        return doesEnemyCheck(positionKing, teamColor);
+
     }
+    public ChessPosition findKing(TeamColor teamColor){
+        //loop through board
+        for (int row = 1; row < 8; row++){
+            for (int col = 1; col < 8; col++){
+                ChessPosition potentialPosition = new ChessPosition(row, col);
+                if (isKing(potentialPosition, teamColor)){
+                    return potentialPosition;
+                }
+            }
+        }
+        throw new IllegalArgumentException("Couldn't find the king piece");
+    }
+    public boolean isKing(ChessPosition potentialPosition, TeamColor myColor){
+        int potentialRow = potentialPosition.getRow();
+        int potentialCol = potentialPosition.getColumn();
+        //is friend
+        if (!isEmpty(board, potentialRow, potentialCol) && !isEnemy(board, potentialRow, potentialCol, myColor)){
+            //is King
+            ChessPiece potentialPiece = board.getPiece(new ChessPosition(potentialRow, potentialCol));
+            ChessPiece.PieceType potentialType = potentialPiece.getPieceType();
+            if (potentialType == ChessPiece.PieceType.KING){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean doesEnemyCheck(ChessPosition positionKing, TeamColor myColor){
+        //loop
+        for (int row = 1; row < 8; row++) {
+            for (int col = 1; col < 8; col++) {
+                if (isEnemy(board, row, col, myColor)) {
+                    ChessPosition potentialPosition = new ChessPosition(row, col);
+                    ChessPiece potentialPiece = board.getPiece(potentialPosition);
+                    Collection<ChessMove> moves = potentialPiece.pieceMoves(board, potentialPosition);
+                    for (ChessMove move : moves) {
+                        ChessPosition potentialEndPosition = move.getEndPosition();
+                        if (potentialEndPosition.equals(positionKing)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isBound(int row, int col){
+        return (row <= 8 && row >=1 && col <=8 && col >= 1);
+    }
+    public boolean isEmpty(ChessBoard board, int row, int col){
+        if (isBound(row, col)) {
+            ChessPiece potentialPiece = board.getPiece(new ChessPosition(row, col));
+            return (potentialPiece == null);
+        }
+        return false;
+    }
+    public boolean isEnemy(ChessBoard board, int row, int col, ChessGame.TeamColor myColor){
+        if (isBound(row,col)) {
+            ChessPiece potentialPiece = board.getPiece(new ChessPosition(row, col));
+            return (!isEmpty(board,row,col) && potentialPiece.getTeamColor() != myColor);
+        }
+        return false;
+    }
+
+    public interface customFinding{
+        ChessPosition finding(int rowKing, int colKing, int row, int col);
+    }
+
 
     /**
      * Determines if the given team is in checkmate
@@ -96,7 +191,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
     }
 
     /**
@@ -105,6 +200,20 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return turn == chessGame.turn && Objects.equals(board, chessGame.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(turn, board);
     }
 }

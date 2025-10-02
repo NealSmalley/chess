@@ -2,6 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Objects;
 
 /**
@@ -65,12 +66,56 @@ public class ChessGame {
         //piece color
         ChessGame.TeamColor colorPiece = startPiece.getTeamColor();
         //doesn't endanger the king
-        if (!isInCheck(colorPiece)) {
-            return moves;
-        }
+//        if (!isInCheck(colorPiece)) {
+//            return moves;
+//        }
         //endangers the king
+        ChessPosition kingPosition = findKing(colorPiece);
 
-        return new HashSet<>();
+        ChessBoard realBoard = this.board;
+        ChessBoard copyBoard = new ChessBoard(realBoard);
+        //alternate boards
+        Iterator<ChessMove> iterate = moves.iterator();
+        while (iterate.hasNext()) {
+            ChessMove move = iterate.next();
+            ChessBoard hypeBoard = new ChessBoard(copyBoard);
+            this.board = hypeBoard;
+            potentialPieceMov(this.board, move, startPosition, startPiece);
+            //if isInCheck remove move
+            if (isInCheck(colorPiece)){
+                iterate.remove();
+            }
+            this.board = realBoard;
+            //board = originalBoard;
+        }
+
+        return moves;
+    }
+    public void potentialPieceMov(ChessBoard board, ChessMove move, ChessPosition startPosition, ChessPiece startPiece){
+        //remove piece
+        board.addPiece(startPosition, null);
+        //piece different location
+        ChessPosition endPosition = move.getEndPosition();
+        board.addPiece(endPosition, startPiece);
+    }
+
+    ChessPosition positionCheckEnemy(ChessPosition positionKing, TeamColor myColor){
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                if (isEnemy(board, row, col, myColor)) {
+                    ChessPosition potentialPosition = new ChessPosition(row, col);
+                    ChessPiece potentialPiece = board.getPiece(potentialPosition);
+                    Collection<ChessMove> moves = potentialPiece.pieceMoves(board, potentialPosition);
+                    for (ChessMove move : moves) {
+                        ChessPosition potentialEndPosition = move.getEndPosition();
+                        if (potentialEndPosition.equals(positionKing)) {
+                            return potentialPosition;
+                        }
+                    }
+                }
+            }
+        }
+        throw new IllegalArgumentException("Couldn't find position of enemy that put king in check ");
     }
 
     /**
@@ -96,8 +141,8 @@ public class ChessGame {
     }
     public ChessPosition findKing(TeamColor teamColor){
         //loop through board
-        for (int row = 1; row < 8; row++){
-            for (int col = 1; col < 8; col++){
+        for (int row = 1; row <= 8; row++){
+            for (int col = 1; col <= 8; col++){
                 ChessPosition potentialPosition = new ChessPosition(row, col);
                 if (isKing(potentialPosition, teamColor)){
                     return potentialPosition;
@@ -123,8 +168,8 @@ public class ChessGame {
 
     public boolean doesEnemyCheck(ChessPosition positionKing, TeamColor myColor){
         //loop
-        for (int row = 1; row < 8; row++) {
-            for (int col = 1; col < 8; col++) {
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
                 if (isEnemy(board, row, col, myColor)) {
                     ChessPosition potentialPosition = new ChessPosition(row, col);
                     ChessPiece potentialPiece = board.getPiece(potentialPosition);
@@ -159,9 +204,6 @@ public class ChessGame {
         return false;
     }
 
-    public interface customFinding{
-        ChessPosition finding(int rowKing, int colKing, int row, int col);
-    }
 
 
     /**

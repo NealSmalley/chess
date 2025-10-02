@@ -125,40 +125,59 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
 
-        //make the actual move
-
-
         ChessPosition startPosition = move.getStartPosition();
+        ChessPosition endPosition = move.getEndPosition();
         Collection<ChessMove> validMoves = validMoves(startPosition);
-        if () {
-
-
-        }
         int row = startPosition.getRow();
         int col = startPosition.getColumn();
         if (isEmpty(board, row, col)) {
             throw new InvalidMoveException("Illegal empty piece");
         }
+        if (validMoves.isEmpty()){
+            throw new InvalidMoveException("Illegal no valid moves");
+        }
         ChessPiece startPiece = board.getPiece(startPosition);
         TeamColor startColor = startPiece.getTeamColor();
-        //correct turn?
-        if (startColor.equals(getTeamTurn())) {
-            //legal move?
-            ChessPosition potentialPosition = new ChessPosition(row, col);
-            ChessPiece potentialPiece = board.getPiece(potentialPosition);
-            Collection<ChessMove> moves = validMoves(potentialPosition);
-            boolean inMoves = false;
-            for (ChessMove eachMove : moves) {
-                if (eachMove.equals(move)) {
-                    inMoves = true;
-                }
-            }
-            if (!inMoves) {
-                throw new InvalidMoveException("Illegal move");
-            }
-        } else {
-            throw new InvalidMoveException("Illegal turn");
+
+        if (!(startColor.equals(getTeamTurn()))) {
+            throw new InvalidMoveException("Illegal wrong turn");
         }
+        boolean validMatch = false;
+        for (ChessMove validMov : validMoves) {
+            //make the actual move
+            if (validMov.equals(move)) {
+                validMatch = true;
+                ChessPiece.PieceType promo = validMov.getPromotionPiece();
+                if (promo != null){
+                    startPiece = new ChessPiece(startColor, promo);
+                }
+                potentialPieceMov(board, validMov, startPosition, startPiece);
+            }
+        }
+        if (!validMatch){
+            throw new InvalidMoveException("Illegal not a valid move");
+        }
+
+//        //correct turn?
+//        if (startColor.equals(getTeamTurn())) {
+//            //legal move?
+//            ChessPosition potentialPosition = new ChessPosition(row, col);
+//            ChessPiece potentialPiece = board.getPiece(potentialPosition);
+//            Collection<ChessMove> moves = validMoves(potentialPosition);
+//            boolean inMoves = false;
+//            for (ChessMove eachMove : moves) {
+//                if (eachMove.equals(move)) {
+//                    inMoves = true;
+//                }
+//            }
+//            if (!inMoves) {
+//                throw new InvalidMoveException("Illegal move");
+//            }
+//        } else {
+//            throw new InvalidMoveException("Illegal turn");
+//        }
+
+
         //set to next color
         if (startColor.equals(TeamColor.WHITE)) {
             setTeamTurn(TeamColor.BLACK);

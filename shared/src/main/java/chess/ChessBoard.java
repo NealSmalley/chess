@@ -19,8 +19,17 @@ public class ChessBoard {
     }
 
     //copy constructor
-    public ChessBoard(ChessBoard other){
+    public ChessBoard(ChessBoard original){
         this.board = new ChessPiece[8][8];
+        for (int row = 0; row < 8; row++){
+            for (int col = 0; col < 8; col++){
+                ChessPiece p = original.board[row][col];
+                this.board[row][col] = (p == null) ? null : p.copy();
+            }
+        }
+    }
+    public ChessBoard copy() {
+        return new ChessBoard(this);
     }
 
     /**

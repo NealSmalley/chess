@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 //import dataaccess.MemoryDataAccess;
+import com.google.gson.JsonSyntaxException;
 import dataaccess.MightNeed.AuthDAO;
 import dataaccess.MightNeed.MemoryAuthDAO;
 import dataaccess.MightNeed.MemoryUserDAO;
@@ -9,6 +10,7 @@ import dataaccess.MightNeed.UserDAO;
 import io.javalin.*;
 import io.javalin.http.*;
 
+import io.javalin.validation.ValidationException;
 import model.UserData;
 
 import service.UserService;
@@ -38,7 +40,7 @@ public class Server {
 //        javalin.get("/game", this::listGame);
 //        javalin.post("/game", this::creatGame);
 //        javalin.put("/game", this::joinGame);
-//        javalin.delete("/db", this::clearApplication);
+        javalin.delete("/db", this::clearApplication);
 
     }
 // handler (whole method)
@@ -51,24 +53,43 @@ public class Server {
             String reqJson = ctx.body();
             UserData req = serializer.fromJson(reqJson, UserData.class);
             //pass back an AuthData
-            var res = Map.of("username", req.username(), "authToken", "yzx");
+            if (req.username() == null || req.email() == null || req.password() == null){
+                throw new BadRequestException();
+            }
 
             // call to the service and register
             //line 3
             model.AuthData authData = userService.register(req);
             //line 13
             ctx.result(serializer.toJson(authData));
-            var msg = String.format("{\"username\":\"\",\"authToken\":\"\"}");
+            //var msg = String.format("{\"username\":\"\",\"authToken\":\"\"}");
             ctx.status(200).result();
+            //var res = Map.of("username", req.username(), "authToken", "yzx");
+            //var res = serializer.toJson(new authData("username", req.username(), "authToken", "yzx"));
+
+            //ctx.status(200).json(res);
 
         }
+        //400
+        catch (BadRequestException ex){
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(400).json(msg);
+        }
+        //403
         catch (Exception ex){
             var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(403).result();
+            //ctx.status(403).result();
+            ctx.status(403).json(msg);
         }
     }
+    //hander
+    private void clearApplication(Context ctx) {
+        userService.clear();
+        ctx.status(200);
+    }
 
-    public int run(int desiredPort) {
+
+        public int run(int desiredPort) {
         javalin.start(desiredPort);
         return javalin.port();
     }

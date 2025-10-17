@@ -1,10 +1,14 @@
 package service;
 
-import dataaccess.DataAccess;
+import com.google.gson.JsonSyntaxException;
+import dataaccess.DataAccessException;
 import dataaccess.MightNeed.AuthDAO;
 import dataaccess.MightNeed.UserDAO;
+import io.javalin.validation.ValidationException;
 import model.AuthData;
 import model.UserData;
+
+import java.util.UUID;
 
 
 public class UserService {
@@ -14,14 +18,13 @@ public class UserService {
         this.userDao = userDao;
         this.authDao = authDao;
     }
-    public AuthData register(UserData user) throws Exception{
-        AuthData auth = new AuthData(user.username(),generateAuthToken());
+    public AuthData register(UserData user) throws Exception, ValidationException, JsonSyntaxException {
+        AuthData auth = new AuthData(generateAuthToken(),user.username());
         //line 4
-        if (userDao.getUser(user.username()) == null){
+        if (userDao.getUser(user.username()) != null){
             //line 6 & 7
-            throw new Exception("already exists");
+            throw new DataAccessException("already taken");
         }
-
         else {
             //line 9
             userDao.createUser(user);
@@ -30,8 +33,13 @@ public class UserService {
         }
         //line 12
         return auth;
-        }
-    private String generateAuthToken() {
-    return "xyz";
     }
+
+    public void clear() {
+        authDao.clear();
+    }
+
+    private String generateAuthToken() {
+            return UUID.randomUUID().toString();
+        }
 }

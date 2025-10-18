@@ -3,16 +3,16 @@ package server;
 import com.google.gson.Gson;
 //import dataaccess.MemoryDataAccess;
 import com.google.gson.JsonSyntaxException;
-import dataaccess.MightNeed.AuthDAO;
-import dataaccess.MightNeed.MemoryAuthDAO;
-import dataaccess.MightNeed.MemoryUserDAO;
-import dataaccess.MightNeed.UserDAO;
+import dataaccess.MightNeed.*;
 import io.javalin.*;
 import io.javalin.http.*;
 
 import io.javalin.validation.ValidationException;
+import model.AuthData;
 import model.UserData;
 
+import service.GameService;
+import service.UnauthorizedException;
 import service.UserService;
 
 import java.util.Map;
@@ -21,13 +21,18 @@ public class Server {
 
     private final Javalin javalin;
     private final UserDAO userDao;
+    private final GameDAO gameDao;
     private final UserService userService;
+    private final GameService gameService;
     private final AuthDAO authDao;
 
     public Server() {
         this.userDao = new MemoryUserDAO();
         this.authDao = new MemoryAuthDAO();
+        this.gameDao = new MemoryGameDAO();
+
         this.userService = new UserService(userDao, authDao);
+        this.gameService = new GameService(gameDao, authDao);
         //var userService = new UserService(dataAccess);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
@@ -35,15 +40,15 @@ public class Server {
         // Register your endpoints and exception handlers here.
         //line 1
         javalin.post("/user", this::register);
-//        javalin.post("/session", this::login);
-//        javalin.delete("/session", this::logout);
+        javalin.post("/session", this::login);
+        javalin.delete("/session", this::logout);
 //        javalin.get("/game", this::listGame);
 //        javalin.post("/game", this::creatGame);
 //        javalin.put("/game", this::joinGame);
         javalin.delete("/db", this::clearApplication);
 
     }
-// handler (whole method)
+// handler register (whole method)
     private void register(Context ctx) {
         //req = request, res = response
         try {
@@ -56,19 +61,12 @@ public class Server {
             if (req.username() == null || req.email() == null || req.password() == null){
                 throw new BadRequestException();
             }
-
             // call to the service and register
             //line 3
-            model.AuthData authData = userService.register(req);
+            AuthData authData = userService.register(req);
             //line 13
             ctx.result(serializer.toJson(authData));
-            //var msg = String.format("{\"username\":\"\",\"authToken\":\"\"}");
             ctx.status(200).result();
-            //var res = Map.of("username", req.username(), "authToken", "yzx");
-            //var res = serializer.toJson(new authData("username", req.username(), "authToken", "yzx"));
-
-            //ctx.status(200).json(res);
-
         }
         //400
         catch (BadRequestException ex){
@@ -82,18 +80,62 @@ public class Server {
             ctx.status(403).json(msg);
         }
     }
-    //hander
-    private void clearApplication(Context ctx) {
-        userService.clear();
-        ctx.status(200);
+    private void login(Context ctx){
+        try{
+            Gson serializer = new Gson();
+            String reqJson = ctx.body();
+            UserData req = serializer.fromJson(reqJson, UserData.class);
+            if (req.username() == null || req.password() == null){
+                throw new BadRequestException();
+            }
+            AuthData authData = userService.login(req);
+
+            ctx.result(serializer.toJson(authData));
+            ctx.status(200).result();
+        }
+        //400
+        catch (BadRequestException ex){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(400).json(msg);
+            }
+        //401
+        catch (UnauthorizedException ex){
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(401).json(msg);
+        }
+        //403
+        catch (Exception ex){
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(403).json(msg);
+        }
+    }
+    private void logout(Context ctx) {
+        try {
+            Gson serializer = new Gson();
+            String authToken = ctx.header("authorization");
+            AuthData authdata = new AuthData(authToken,null);
+            userService.logout(authdata);
+            ctx.status(200).result();
+        }
+        //401
+        catch (UnauthorizedException ex){
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(401).json(msg);
+        }
     }
 
 
+
+    //hander clear application
+    private void clearApplication(Context ctx) {
+        userService.clear();
+        gameService.clear();
+        ctx.status(200);
+    }
         public int run(int desiredPort) {
         javalin.start(desiredPort);
         return javalin.port();
     }
-
     public void stop() {
         javalin.stop();
     }

@@ -18,7 +18,7 @@ public class UserService {
         this.userDao = userDao;
         this.authDao = authDao;
     }
-    public AuthData register(UserData user) throws Exception, ValidationException, JsonSyntaxException {
+    public AuthData register(UserData user) throws Exception {
         AuthData auth = new AuthData(generateAuthToken(),user.username());
         //line 4
         if (userDao.getUser(user.username()) != null){
@@ -34,9 +34,38 @@ public class UserService {
         //line 12
         return auth;
     }
+    public AuthData login(UserData user) throws Exception {
+        AuthData auth = new AuthData(generateAuthToken(),user.username());
+        //User exists
+        if (userDao.getUser(user.username()) == null) {
+            throw new UnauthorizedException();
+        }
+        else {
+            UserData userdata = userDao.getUser(user.username());
+            //password is wrong
+            if (!(userdata.password().equals(user.password()))){
+                throw new UnauthorizedException();
+            }
+            authDao.createAuth(auth);
+        }
+        return auth;
+    }
+
+    public void logout(AuthData auth) throws UnauthorizedException {
+    //if logged in
+        String authTokenUser = auth.authToken();
+        String authTokenDB = authDao.getAuth(authTokenUser);
+        if (!(authTokenDB.equals(authTokenUser))){
+            throw new UnauthorizedException();
+        }
+        //remove authToken
+        authDao.removeAuth(authTokenUser);
+    }
+
 
     public void clear() {
         authDao.clear();
+        userDao.clear();
     }
 
     private String generateAuthToken() {

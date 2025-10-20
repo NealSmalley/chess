@@ -61,6 +61,13 @@ public class UserService {
         //remove authToken
         authDao.removeAuth(authTokenUser);
     }
+    //checks of authentication token is valid
+    public void authenticatUser(String authTokenUser) throws UnauthorizedException{
+        String authTokenDB = authDao.getAuth(authTokenUser);
+        if (!(authTokenDB.equals(authTokenUser))){
+            throw new UnauthorizedException();
+        }
+    }
 
 
     public void clear() {

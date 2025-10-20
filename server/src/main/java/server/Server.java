@@ -9,6 +9,7 @@ import io.javalin.http.*;
 
 import io.javalin.validation.ValidationException;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 
 import service.GameService;
@@ -43,7 +44,7 @@ public class Server {
         javalin.post("/session", this::login);
         javalin.delete("/session", this::logout);
 //        javalin.get("/game", this::listGame);
-//        javalin.post("/game", this::creatGame);
+        javalin.post("/game", this::creategame);
 //        javalin.put("/game", this::joinGame);
         javalin.delete("/db", this::clearApplication);
 
@@ -123,6 +124,38 @@ public class Server {
             ctx.status(401).json(msg);
         }
     }
+
+    private void creategame(Context ctx){
+        try {
+            Gson serializer = new Gson();
+            String authToken = ctx.header("authorization");
+            String gameName = ctx.body();
+
+            if (gameName.equals("{}") || authToken == null){
+                throw new BadRequestException();
+            }
+
+            //Authenticate Authtoken
+            userService.authenticatUser(authToken);
+            //GameData gamedata = new GameData(null, null, null,gameName, null);
+            GameData gameData = gameService.creategame(gameName);
+
+            ctx.result(serializer.toJson(gameData));
+            ctx.status(200).result();
+        }
+        //400
+        catch (BadRequestException ex){
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(400).json(msg);
+        }
+        //401
+        catch (UnauthorizedException ex){
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(401).json(msg);
+        }
+    }
+
+
 
 
 

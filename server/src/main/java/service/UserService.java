@@ -68,6 +68,10 @@ public class UserService {
             throw new UnauthorizedException();
         }
     }
+    public String getUsernameAuth(String authToken){
+        String username = authDao.getUsernameAuth(authToken);
+        return username;
+    }
 
 
     public void clear() {

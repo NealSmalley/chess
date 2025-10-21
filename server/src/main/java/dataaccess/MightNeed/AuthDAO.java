@@ -9,4 +9,5 @@ public interface AuthDAO {
     public void clear();
     public String getAuth(String authToken) throws UnauthorizedException;
     public void removeAuth(String authToken);
+    public String getUsernameAuth(String authToken);
 }

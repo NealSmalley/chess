@@ -79,7 +79,7 @@ public class Rule {
                     }
                     //Blocked
                     else {
-                        if (isEnemy(board, nextRow, nextCol, myColor)) {
+                        if (isEnemyRule(board, nextRow, nextCol, myColor)) {
                             moves.add(new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null));
                         }
                         //Friend
@@ -115,12 +115,12 @@ public class Rule {
     }
     public void attack(ChessBoard board, HashSet<ChessMove> moves, int row, int col, int promoRow, ChessGame.TeamColor myColor, ChessPosition myPosition){
         if (isBound(row,col)){
-            if (isEnemy(board, row, col, myColor)) {
+            if (isEnemyRule(board, row, col, myColor)) {
                 promotions(moves, board, myPosition, new ChessPosition(row,col), (row == promoRow));
             }
         }
     }
-    public boolean isEnemy(ChessBoard board, int row, int col, ChessGame.TeamColor myColor){
+    public boolean isEnemyRule(ChessBoard board, int row, int col, ChessGame.TeamColor myColor){
         if (isBound(row,col)) {
             ChessPiece potentialPiece = board.getPiece(new ChessPosition(row, col));
             return (!isEmpty(board,row,col) && potentialPiece.getTeamColor() != myColor);
@@ -128,7 +128,7 @@ public class Rule {
         return false;
     }
     public boolean isAvailable(ChessBoard board, int row, int col, ChessGame.TeamColor myColor){
-        return (isEnemy(board, row, col, myColor)||isEmpty(board, row, col));
+        return (isEnemyRule(board, row, col, myColor)||isEmpty(board, row, col));
     }
 }
 

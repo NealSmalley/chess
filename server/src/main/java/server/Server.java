@@ -218,18 +218,18 @@ public class Server {
         }
         //400
         catch (BadRequestException ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(400).json(msg);
+            var errormsg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(400).json(errormsg);
         }
         //401
         catch (UnauthorizedException ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(401).json(msg);
+            var errormsg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(401).json(errormsg);
         }
         //403
         catch (Exception ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(403).json(msg);
+            var errormsg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(403).json(errormsg);
         }
     }
 

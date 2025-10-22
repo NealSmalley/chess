@@ -176,7 +176,7 @@ public class Server {
             ctx.status(200).result();
         }
         //401
-        catch (UnauthorizedException ex){
+        catch (Exception ex){
             var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
             ctx.status(401).json(msg);
         }

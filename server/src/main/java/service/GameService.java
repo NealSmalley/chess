@@ -3,6 +3,7 @@ package service;
 import dataaccess.MightNeed.AuthDAO;
 import dataaccess.MightNeed.GameDAO;
 import model.GameData;
+import server.BadRequestException;
 
 import java.util.HashMap;
 
@@ -14,7 +15,11 @@ public class GameService {
         this.authDao = authDao;
     }
 
-    public GameData creategame(String gameName){
+    public GameData creategame(String gameName) throws BadRequestException{
+
+        if (gameName.equals("")){
+            throw new BadRequestException();
+        }
         GameData gameData = gameDao.creategame(gameName);
         return gameData;
     }

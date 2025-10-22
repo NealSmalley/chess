@@ -69,7 +69,7 @@ public class MemoryGameDAO implements GameDAO{
         return updategamedata;
     }
 
-    public HashMap<Integer, GameData> listgames(){
+    public HashMap<Integer, GameData> listgames() {
         return games;
     }
 }

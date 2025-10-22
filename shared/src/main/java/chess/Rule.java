@@ -125,9 +125,11 @@ public class Rule {
     public boolean isEnemyRule(ChessBoard board, int row, int col, ChessGame.TeamColor myColor){
         if (isBound(row,col)) {
             ChessPiece potentialPiece = board.getPiece(new ChessPosition(row, col));
-            var cond1 = !isEmpty(board,row,col);
-            var cond2 = potentialPiece.getTeamColor()!= myColor;
-            return (cond1 && cond2);
+            if (potentialPiece != null) {
+                var cond1 = !isEmpty(board, row, col);
+                var cond2 = potentialPiece.getTeamColor() != myColor;
+                return (cond1 && cond2);
+            }
         }
         return false;
     }

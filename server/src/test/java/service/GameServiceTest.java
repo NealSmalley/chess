@@ -1,7 +1,7 @@
 package service;
 
 import com.google.gson.Gson;
-import dataaccess.MightNeed.*;
+import dataaccess.mightneed.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;

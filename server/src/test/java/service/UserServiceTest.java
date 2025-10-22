@@ -1,9 +1,9 @@
 package service;
 
-import dataaccess.MightNeed.AuthDAO;
-import dataaccess.MightNeed.MemoryAuthDAO;
-import dataaccess.MightNeed.MemoryUserDAO;
-import dataaccess.MightNeed.UserDAO;
+import dataaccess.mightneed.AuthDAO;
+import dataaccess.mightneed.MemoryAuthDAO;
+import dataaccess.mightneed.MemoryUserDAO;
+import dataaccess.mightneed.UserDAO;
 import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;

@@ -1,12 +1,10 @@
-package dataaccess.MightNeed;
+package dataaccess.mightneed;
 
 import chess.ChessGame;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import model.AuthData;
 import model.GameData;
 import server.BadRequestException;
-import service.UnauthorizedException;
 
 import java.util.HashMap;
 

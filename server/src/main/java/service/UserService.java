@@ -1,10 +1,8 @@
 package service;
 
-import com.google.gson.JsonSyntaxException;
 import dataaccess.DataAccessException;
-import dataaccess.MightNeed.AuthDAO;
-import dataaccess.MightNeed.UserDAO;
-import io.javalin.validation.ValidationException;
+import dataaccess.mightneed.AuthDAO;
+import dataaccess.mightneed.UserDAO;
 import model.AuthData;
 import model.UserData;
 

@@ -1,4 +1,4 @@
-package dataaccess.MightNeed;
+package dataaccess.mightneed;
 
 import model.AuthData;
 import service.UnauthorizedException;

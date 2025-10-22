@@ -1,7 +1,6 @@
-package dataaccess.MightNeed;
+package dataaccess.mightneed;
 
 import model.AuthData;
-import model.UserData;
 import service.UnauthorizedException;
 
 import java.util.HashMap;

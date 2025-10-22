@@ -1,7 +1,7 @@
 package service;
 
-import dataaccess.MightNeed.AuthDAO;
-import dataaccess.MightNeed.GameDAO;
+import dataaccess.mightneed.AuthDAO;
+import dataaccess.mightneed.GameDAO;
 import model.GameData;
 import server.BadRequestException;
 

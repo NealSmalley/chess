@@ -1,8 +1,7 @@
-package dataaccess.MightNeed;
+package dataaccess.mightneed;
 
 
 //import dataaccess.DataAccess;
-import model.AuthData;
 import model.UserData;
 
 import java.util.HashMap;

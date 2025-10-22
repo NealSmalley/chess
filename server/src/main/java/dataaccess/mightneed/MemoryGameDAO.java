@@ -25,9 +25,9 @@ public class MemoryGameDAO implements GameDAO{
         // Extract the actual name
         String gameName = obj.get("gameName").getAsString();
 
-        int ID = gameIDGenerator();
-        GameData gamedata = new GameData(ID, null, null,gameName, null);
-        games.put(ID, gamedata);
+        int id = gameIDGenerator();
+        GameData gamedata = new GameData(id, null, null,gameName, null);
+        games.put(id, gamedata);
         return gamedata;
     }
 
@@ -36,14 +36,14 @@ public class MemoryGameDAO implements GameDAO{
 
 
         //get game
-        GameData CurrentGame = games.get(gameID);
-        if (CurrentGame == null){
+        GameData currentGame = games.get(gameID);
+        if (currentGame == null){
             throw new BadRequestException();
         }
-        String currentGameName = CurrentGame.gameName();
-        ChessGame currentGame = CurrentGame.game();
-        String whiteUsername = CurrentGame.whiteUsername();
-        String blackUsername = CurrentGame.blackUsername();
+        String currentGameName = currentGame.gameName();
+        ChessGame currentgame = currentGame.game();
+        String whiteUsername = currentGame.whiteUsername();
+        String blackUsername = currentGame.blackUsername();
 
 
         //already taken
@@ -62,7 +62,7 @@ public class MemoryGameDAO implements GameDAO{
 
 
         //update
-        GameData updategamedata = new GameData(gameID, whiteUsername, blackUsername, currentGameName, currentGame);
+        GameData updategamedata = new GameData(gameID, whiteUsername, blackUsername, currentGameName, currentgame);
         games.put(gameID, updategamedata);
         return updategamedata;
     }

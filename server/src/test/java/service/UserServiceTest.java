@@ -34,9 +34,6 @@ class UserServiceTest {
         var authData = userService.register(user);
 
         Assertions.assertThrows(Exception.class,()->userService.register(user));
-//        assertNotNull(authData);
-//        assertEquals(user.username(), authData.username());
-//        assertTrue(!authData.authToken().isEmpty());
     }
 
     @Test
@@ -61,9 +58,6 @@ class UserServiceTest {
         //var authDataReg = userService.register(user);
         //var authData = userService.login(user);
         Assertions.assertThrows(UnauthorizedException.class,()->userService.login(user));
-//        assertNotNull(authData);
-//        assertEquals(user.username(), authData.username());
-//        assertTrue(!authData.authToken().isEmpty());
     }
 
     @Test

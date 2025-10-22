@@ -98,24 +98,7 @@ public class ChessGame {
         board.addPiece(endPosition, startPiece);
     }
 
-    ChessPosition positionCheckEnemy(ChessPosition positionKing, TeamColor myColor) {
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                if (isEnemy(board, row, col, myColor)) {
-                    ChessPosition potentialPosition = new ChessPosition(row, col);
-                    ChessPiece potentialPiece = board.getPiece(potentialPosition);
-                    Collection<ChessMove> moves = potentialPiece.pieceMoves(board, potentialPosition);
-                    for (ChessMove move : moves) {
-                        ChessPosition potentialEndPosition = move.getEndPosition();
-                        if (potentialEndPosition.equals(positionKing)) {
-                            return potentialPosition;
-                        }
-                    }
-                }
-            }
-        }
-        throw new IllegalArgumentException("Couldn't find position of enemy that put king in check ");
-    }
+
 
     /**
      * Makes a move in a chess game
@@ -157,25 +140,6 @@ public class ChessGame {
         if (!validMatch){
             throw new InvalidMoveException("Illegal not a valid move");
         }
-
-//        //correct turn?
-//        if (startColor.equals(getTeamTurn())) {
-//            //legal move?
-//            ChessPosition potentialPosition = new ChessPosition(row, col);
-//            ChessPiece potentialPiece = board.getPiece(potentialPosition);
-//            Collection<ChessMove> moves = validMoves(potentialPosition);
-//            boolean inMoves = false;
-//            for (ChessMove eachMove : moves) {
-//                if (eachMove.equals(move)) {
-//                    inMoves = true;
-//                }
-//            }
-//            if (!inMoves) {
-//                throw new InvalidMoveException("Illegal move");
-//            }
-//        } else {
-//            throw new InvalidMoveException("Illegal turn");
-//        }
 
 
         //set to next color

@@ -73,20 +73,22 @@ public class Rule {
 
                 //Queen, Rook, Bishop
                 while (isBound(nextRow, nextCol)) {
+                    ChessPosition nextPosition = new ChessPosition(nextRow, nextCol);
                     //Empty
                     if (isEmpty(board, nextRow, nextCol)) {
-                        moves.add(new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null));
+                        moves.add(new ChessMove(myPosition, nextPosition, null));
+                        nextRow = nextRow + rowMod;
+                        nextCol = nextCol + colMod;
+                        continue;
                     }
                     //Blocked
-                    else {
-                        if (isEnemyRule(board, nextRow, nextCol, myColor)) {
-                            moves.add(new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null));
-                        }
-                        //Friend
-                        break;
+                    if (isEnemyRule(board, nextRow, nextCol, myColor)) {
+                        moves.add(new ChessMove(myPosition, nextPosition, null));
                     }
-                    nextRow = nextRow + rowMod;
-                    nextCol = nextCol + colMod;
+                    //Friend
+                    break;
+
+
                 }
             }
         }
@@ -113,17 +115,19 @@ public class Rule {
             moves.add(new ChessMove(myPosition, nextPosition,null));
         }
     }
-    public void attack(ChessBoard board, HashSet<ChessMove> moves, int row, int col, int promoRow, ChessGame.TeamColor myColor, ChessPosition myPosition){
+    public void attack(ChessBoard board, HashSet<ChessMove> moves, int row, int col, int promoRow, ChessGame.TeamColor myColor, ChessPosition myPos){
         if (isBound(row,col)){
             if (isEnemyRule(board, row, col, myColor)) {
-                promotions(moves, board, myPosition, new ChessPosition(row,col), (row == promoRow));
+                promotions(moves, board, myPos, new ChessPosition(row,col), (row == promoRow));
             }
         }
     }
     public boolean isEnemyRule(ChessBoard board, int row, int col, ChessGame.TeamColor myColor){
         if (isBound(row,col)) {
             ChessPiece potentialPiece = board.getPiece(new ChessPosition(row, col));
-            return (!isEmpty(board,row,col) && potentialPiece.getTeamColor() != myColor);
+            var cond1 = !isEmpty(board,row,col);
+            var cond2 = potentialPiece.getTeamColor()!= myColor;
+            return (cond1 && cond2);
         }
         return false;
     }

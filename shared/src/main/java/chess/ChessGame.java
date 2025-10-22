@@ -247,8 +247,7 @@ public class ChessGame {
         ChessPosition positionKing = findKing(teamColor);
         ChessPiece pieceKing = board.getPiece(positionKing);
         Collection<ChessMove> moves = pieceKing.pieceMoves(board, positionKing);
-        if (surroundingCheck(moves, positionKing, pieceKing, teamColor)) {
-            if (isInCheck(teamColor)) {
+        if (surroundingCheck(moves, positionKing, pieceKing, teamColor) && (isInCheck(teamColor))) {
                 //saved by other pieces?
                 //loop board
                 //alternative to nested loops
@@ -264,7 +263,6 @@ public class ChessGame {
                         }
                 }
                 return true;
-            }
         }
         return false;
     }
@@ -295,10 +293,8 @@ public class ChessGame {
                     if (pieceFriend != null) {
                         Collection<ChessMove> movesFriend = validMoves(positionFriend);
                         //isfriend
-                        if (isFriend(board, row, col, teamColor)) {
-                            if (!movesFriend.isEmpty()) {
+                        if (isFriend(board, row, col, teamColor) && (!movesFriend.isEmpty())) {
                                 otherFriendMov = true;
-                            }
                         }
                     }
 

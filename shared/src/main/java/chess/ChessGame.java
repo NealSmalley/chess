@@ -193,8 +193,10 @@ public class ChessGame {
 
     public boolean doesEnemyCheck(ChessPosition positionKing, TeamColor myColor) {
         //loop board
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
+        //alternative to nested loop that uses division and modulo
+        for (int i = 0; i < 64; i++) {
+            int row = (i / 8) + 1;
+            int col = (i % 8) + 1;
                 //isEnemy
                 if (isEnemy(board, row, col, myColor)) {
                     ChessPosition potentialPosition = new ChessPosition(row, col);
@@ -208,7 +210,6 @@ public class ChessGame {
                         }
                     }
                 }
-            }
         }
         return false;
     }
@@ -250,8 +251,10 @@ public class ChessGame {
             if (isInCheck(teamColor)) {
                 //saved by other pieces?
                 //loop board
-                for (int row = 1; row <= 8; row++) {
-                    for (int col = 1; col <= 8; col++) {
+                //alternative to nested loops
+                for (int i = 0; i < 64; i++) {
+                    int row = (i / 8)+1;
+                    int col = (i % 8)+1;
                         //isFriend
                         if (!isEmpty(board, row, col) && !isEnemy(board, row, col, teamColor)) {
                             moves = validMoves(new ChessPosition(row, col));
@@ -259,7 +262,6 @@ public class ChessGame {
                                 return false;
                             }
                         }
-                    }
                 }
                 return true;
             }
@@ -284,8 +286,9 @@ public class ChessGame {
             //check for default or other piece moves
             boolean otherFriendMov = false;
 
-            for (int row = 1; row <= 8; row++) {
-                for (int col = 1; col <= 8; col++) {
+            for (int i = 0; i < 64; i++) {
+                int row = (i / 8) + 1; // 1–8
+                int col = (i % 8) + 1;
                     ChessPosition positionFriend = new ChessPosition(row, col);
                     ChessPiece pieceFriend = board.getPiece(positionFriend);
                     //isNull
@@ -298,7 +301,7 @@ public class ChessGame {
                             }
                         }
                     }
-                }
+
             }
             return !otherFriendMov;
         }

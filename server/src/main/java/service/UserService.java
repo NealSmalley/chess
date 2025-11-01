@@ -21,7 +21,7 @@ public class UserService {
         //line 4
         if (userDao.getUser(user.username()) != null){
             //line 6 & 7
-            throw new DataAccessException("already taken");
+            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "already taken");
         }
         else {
             //line 9
@@ -49,30 +49,37 @@ public class UserService {
         return auth;
     }
 
-    public void logout(AuthData auth) throws UnauthorizedException {
+    public void logout(AuthData auth) throws DataAccessException {
     //if logged in
         String authTokenUser = auth.authToken();
         String authTokenDB = authDao.getAuth(authTokenUser);
         if (!(authTokenDB.equals(authTokenUser))){
-            throw new UnauthorizedException();
+            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
         }
         //remove authToken
         authDao.removeAuth(authTokenUser);
     }
     //checks of authentication token is valid
-    public void authenticatUser(String authTokenUser) throws UnauthorizedException{
+    public void authenticatUser(String authTokenUser) throws DataAccessException{
         String authTokenDB = authDao.getAuth(authTokenUser);
         if (!(authTokenDB.equals(authTokenUser))){
-            throw new UnauthorizedException();
+            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
         }
     }
-    public String getUsernameAuth(String authToken){
+    public String getUsernameAuth(String authToken) throws DataAccessException{
         String username = authDao.getUsernameAuth(authToken);
-        return username;
+        if (username != null) {
+            return username;
+        }
+        else{
+            throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "unable to find username");
+
+        }
+
     }
 
 
-    public void clear() {
+    public void clear() throws DataAccessException{
         authDao.clear();
         userDao.clear();
     }

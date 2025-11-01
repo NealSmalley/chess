@@ -119,7 +119,7 @@ public class Server {
             ctx.status(200).result();
         }
         //401
-        catch (UnauthorizedException ex){
+        catch (DataAccessException ex){
             var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
             ctx.status(401).json(msg);
         }
@@ -132,7 +132,7 @@ public class Server {
             String gameName = ctx.body();
 
             if (gameName.equals("{}") || authToken == null){
-                throw new BadRequestException();
+                throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "gameName is emptyset or authToken is null");
             }
 
             //Authenticate Authtoken
@@ -143,15 +143,17 @@ public class Server {
             ctx.result(serializer.toJson(gameData));
             ctx.status(200).result();
         }
-        //400
-        catch (BadRequestException ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(400).json(msg);
-        }
-        //401
-        catch (UnauthorizedException ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(401).json(msg);
+        catch (DataAccessException ex){
+            //400
+            if (ex.getExc() == DataAccessException.PossibleExc.BadRequest){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(400).json(msg);
+            }
+            //401
+            if (ex.getExc() == DataAccessException.PossibleExc.Unauthorized) {
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(401).json(msg);
+            }
         }
     }
 
@@ -236,7 +238,7 @@ public class Server {
 
 
     //hander clear application
-    private void clearApplication(Context ctx) {
+    private void clearApplication(Context ctx) throws DataAccessException{
         userService.clear();
         gameService.clear();
         ctx.status(200);

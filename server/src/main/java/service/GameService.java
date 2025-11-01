@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.GameData;
 import server.BadRequestException;
@@ -15,10 +16,10 @@ public class GameService {
         this.authDao = authDao;
     }
 
-    public GameData creategame(String gameName) throws BadRequestException{
-
+    public GameData creategame(String gameName) throws DataAccessException {
+        //bad request
         if (gameName.equals("")){
-            throw new BadRequestException();
+            throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "gameName is empty");
         }
         GameData gameData = gameDao.creategame(gameName);
         return gameData;

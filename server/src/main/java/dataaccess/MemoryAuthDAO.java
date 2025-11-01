@@ -19,14 +19,15 @@ public class MemoryAuthDAO implements AuthDAO{
         auths.clear();
     }
     @Override
-    public String getAuth(String authTokenkey) throws UnauthorizedException{
+    public String getAuth(String authTokenkey) throws DataAccessException{
         AuthData authData = auths.get(authTokenkey);
         String authToken;
         if (authData != null) {
             authToken = authData.authToken();
         }
         else{
-            throw new UnauthorizedException();
+            throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "AuthData is null");
+
         }
         return authToken;
     }

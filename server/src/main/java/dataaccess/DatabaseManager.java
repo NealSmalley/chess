@@ -26,7 +26,7 @@ import java.util.Properties;
                  var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             } catch (SQLException ex) {
-                throw new DataAccessException("failed to create database", ex);
+                throw new DataAccessException(DataAccessException.PossibleExc.ServerError, ex.getMessage());
             }
         }
 
@@ -49,7 +49,7 @@ import java.util.Properties;
                 conn.setCatalog(databaseName);
                 return conn;
             } catch (SQLException ex) {
-                throw new DataAccessException("failed to get connection", ex);
+                throw new DataAccessException(DataAccessException.PossibleExc.ServerError, ex.getMessage());
             }
         }
 

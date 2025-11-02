@@ -1,5 +1,7 @@
 package service;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
@@ -21,7 +23,15 @@ public class GameService {
         if (gameName.equals("")){
             throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "gameName is empty");
         }
-        GameData gameData = gameDao.creategame(gameName);
+        //Json string to string
+        JsonObject obj = JsonParser.parseString(gameName).getAsJsonObject();
+        // Extract the actual name
+        String gameNameInput = obj.get("gameName").getAsString();
+
+
+        GameData gamedata = new GameData(null, null, null,gameNameInput, null);
+
+        GameData gameData = gameDao.creategame(gamedata);
         return gameData;
     }
 

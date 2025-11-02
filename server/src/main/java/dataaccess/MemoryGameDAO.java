@@ -19,16 +19,12 @@ public class MemoryGameDAO implements GameDAO{
         int nextID = games.size() + 1;
         return nextID;
     }
-    public GameData creategame(String gameNametest){
-        //Json string to string
-        JsonObject obj = JsonParser.parseString(gameNametest).getAsJsonObject();
-        // Extract the actual name
-        String gameName = obj.get("gameName").getAsString();
-
+    public GameData creategame(GameData gameData){
         int id = gameIDGenerator();
-        GameData gamedata = new GameData(id, null, null,gameName, null);
-        games.put(id, gamedata);
-        return gamedata;
+        String gameNameInput = gameData.gameName();
+        GameData gameDataInput = new GameData(id, null, null,gameNameInput, null);
+        games.put(id, gameDataInput);
+        return gameDataInput;
     }
 
 

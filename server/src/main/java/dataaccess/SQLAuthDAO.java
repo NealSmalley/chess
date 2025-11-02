@@ -31,7 +31,6 @@ public class SQLAuthDAO implements AuthDAO{
     }
     //var with SQL table
     private final String[] createStatements = {
-            //Why do we need a json column?
             """
             CREATE TABLE IF NOT EXISTS  auth (
               `authToken` varchar(256) NOT NULL,
@@ -73,9 +72,8 @@ public class SQLAuthDAO implements AuthDAO{
 
 
     public void clear() throws DataAccessException{
-            var statement = "TRUNCATE auth";
+            String statement = "TRUNCATE auth";
             executeUpdate(statement);
-
     }
 
     public String getAuth(String authToken) throws DataAccessException{
@@ -101,9 +99,6 @@ public class SQLAuthDAO implements AuthDAO{
         AuthData auth = new AuthData(authToken, username);
         return auth.authToken();
     }
-
-
-
 
     public void removeAuth(String authToken) throws DataAccessException{
             var statement = "DELETE FROM auth WHERE authToken=?";

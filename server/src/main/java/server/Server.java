@@ -231,10 +231,10 @@ public class Server {
 
 
             if (gameInfo.equals("{}") || authToken == null || playerColor == null){
-                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "gameinfo is empty set or authToken is null or playerColor is null");
+                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "gameinfo is empty set or authToken is null or playerColor is null");
             }
             if ((!playerColor.equals("BLACK")) && (!playerColor.equals("WHITE"))){
-                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "player color is not black or white");
+                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "player color is not black or white");
             }
 
             //Authenticate Authtoken
@@ -259,6 +259,11 @@ public class Server {
             if (ex.getExc() == dataaccess.DataAccessException.PossibleExc.Unauthorized) {
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(401).json(msg);
+            }
+            //403
+            if (ex.getExc() == dataaccess.DataAccessException.PossibleExc.Forbidden) {
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(403).json(msg);
             }
         }
 //        //400

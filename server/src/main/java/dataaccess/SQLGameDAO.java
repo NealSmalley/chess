@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -58,6 +59,7 @@ public class SQLGameDAO implements GameDAO{
     private int executeUpdateCustom(String statement, Object... params) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
+                Gson gson = new Gson();
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
                     //gameID
@@ -65,7 +67,7 @@ public class SQLGameDAO implements GameDAO{
                     //whiteUsername, blackUsername, gameName
                     else if (param instanceof String p) ps.setString(i + 1, p);
                     //game
-                    else if (param instanceof ChessGame p) ps.setString(i + 1, p.toString());
+                    else if (param instanceof ChessGame p) ps.setString(i + 1, gson.toJson(p));
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
@@ -91,13 +93,67 @@ public class SQLGameDAO implements GameDAO{
     }
     public GameData updategame(GameData gamedata) throws Exception{
         try (var conn = DatabaseManager.getConnection()) {
+            //already taken
+            String taken = "SELECT whiteUsername, blackUsername FROM game WHERE gameID = ?";
+            String currentWhiteUser = null;
+            String currentBlackUser = null;
+            try (PreparedStatement currentStatement = conn.prepareStatement(taken)){
+                currentStatement.setInt(1, gamedata.gameID());
+                try (ResultSet rs = currentStatement.executeQuery()){
+                    if (rs.next()){
+                        currentWhiteUser = rs.getString("whiteUsername");
+                        currentBlackUser = rs.getString("blackUsername");
+                    } else{
+                        throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, " updategame() issue with whiteUsername or blackUsername");
+                    }
+                }
+            }
+            String FinalWhiteUser = "";
+            String FinalBlackUser = "";
+            //obj whiteusername is not empty
+            if (gamedata.whiteUsername() != null){
+                //sql whiteusername is not empty
+                if (currentWhiteUser != null && !currentWhiteUser.isEmpty()){
+                    throw new DataAccessException(DataAccessException.PossibleExc.Forbidden, "403: Join Steal Team Color Exception");
+                }
+            }
+            if (gamedata.blackUsername() != null){
+                if (currentBlackUser != null && !currentBlackUser.isEmpty()){
+                    throw new DataAccessException(DataAccessException.PossibleExc.Forbidden, "403: Join Steal Team Color Exception");
+                }
+            }
+
+            //if whiteusername is null
+            if (gamedata.whiteUsername() == null){
+                FinalWhiteUser = currentWhiteUser;
+            }
+            //not null
+            else {
+                FinalWhiteUser = gamedata.whiteUsername();
+            }
+            //if blackusername is null
+            if (gamedata.blackUsername() == null){
+                FinalBlackUser = currentBlackUser;
+            }
+            //not null
+            else {
+                FinalBlackUser = gamedata.blackUsername();
+            }
+
+            //sql versions of gameName and game
+            String gameName = getGameInfo(conn,gamedata,"gameName");
+            String gameJson = getGameInfo(conn,gamedata,"game");
+
+
+            //Update
             String sql = "UPDATE game SET whiteUsername = ?, blackUsername = ?, gameName= ?, game = ? WHERE gameID = ?";
             try (var statement = conn.prepareStatement(sql)) {
-                Gson gson = new Gson();
-                String gameJson = gson.toJson(gamedata.game());
-                statement.setString(1, gamedata.whiteUsername());
-                statement.setString(2, gamedata.blackUsername());
-                statement.setString(3, gamedata.gameName());
+                //Gson gson = new Gson();
+                //String gameJson = gson.toJson(gamedata.game());
+                //String gameJsonSerialized = gson.toJson(gameJson);
+                statement.setString(1, FinalWhiteUser);
+                statement.setString(2, FinalBlackUser);
+                statement.setString(3, gameName);
                 statement.setString(4, gameJson);
                 statement.setInt(5, gamedata.gameID());
                 int updatedRows = statement.executeUpdate();
@@ -109,6 +165,25 @@ public class SQLGameDAO implements GameDAO{
         }
         return gamedata;
     }
+    public String getGameInfo(Connection conn, GameData gamedata, String columnLabel) throws DataAccessException, SQLException{
+        String gameInfo;
+        //String gameJson;
+        String assigning = "SELECT gameName, game FROM game WHERE gameID = ?";
+        try (PreparedStatement currentStatement = conn.prepareStatement(assigning)){
+            currentStatement.setInt(1, gamedata.gameID());
+            try (ResultSet rs = currentStatement.executeQuery()){
+                if (rs.next()){
+                    gameInfo = rs.getString(columnLabel);
+                    //gameName = rs.getString("gameName");
+                    //gameJson = rs.getString("game");
+                } else{
+                    throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "gameName or game doesn't exist");
+                }
+            }
+        }
+        return gameInfo;
+    }
+
 
     public HashMap<Integer, GameData> listgames() throws dataaccess.DataAccessException {
         //list/arraylist to preserve the order
@@ -121,8 +196,8 @@ public class SQLGameDAO implements GameDAO{
                     }
                 }
             }
-        } catch (Exception e) {
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+        } catch (SQLException e) {
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Sql, "sql exception listgames");
         }
         HashMap<Integer, GameData> map = zipListToMap(GameDatas);
         return map;

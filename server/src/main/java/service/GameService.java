@@ -29,7 +29,7 @@ public class GameService {
         String gameNameInput = obj.get("gameName").getAsString();
 
         ChessGame game = new ChessGame();
-        GameData gamedata = new GameData(0, "", "",gameNameInput, game);
+        GameData gamedata = new GameData(0, null, null,gameNameInput, game);
 
         GameData gameData = gameDao.creategame(gamedata);
         return gameData;

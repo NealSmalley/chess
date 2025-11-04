@@ -1,7 +1,6 @@
 package dataaccess;
 
 import model.AuthData;
-import service.UnauthorizedException;
 
 public interface AuthDAO {
     //line 11

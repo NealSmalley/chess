@@ -26,7 +26,7 @@ import java.util.Properties;
                  var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             } catch (SQLException ex) {
-                throw new DataAccessException(DataAccessException.PossibleExc.ServerError, ex.getMessage());
+                throw new DataAccessException(DataAccessException.PossibleExc.Sql, "SQL Exception");
             }
         }
 
@@ -49,7 +49,7 @@ import java.util.Properties;
                 conn.setCatalog(databaseName);
                 return conn;
             } catch (SQLException ex) {
-                throw new DataAccessException(DataAccessException.PossibleExc.ServerError, ex.getMessage());
+                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Sql, "SQL exception");
             }
         }
 

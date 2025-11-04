@@ -10,6 +10,10 @@ public class DataAccessException extends Exception{
 //    public DataAccessException(String message, Throwable ex) {
 //        super(message, ex);
 //    }
+    //old version
+    //public DataAccessException(){
+    //      super();
+    //    }
 
 
     //possible Exceptions
@@ -17,7 +21,8 @@ public class DataAccessException extends Exception{
         BadRequest,
         Unauthorized,
         Forbidden,
-        ServerError
+        ServerError,
+        Sql
     }
     //Exception private var
     private final DataAccessException.PossibleExc exc;

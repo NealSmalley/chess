@@ -1,7 +1,5 @@
 package dataaccess;
-import com.google.gson.Gson;
 import model.*;
-import service.UnauthorizedException;
 //imports Connection and SQLException
 import java.sql.*;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
@@ -9,7 +7,7 @@ import static java.sql.Types.NULL;
 
 public class SQLUserDAO implements UserDAO{
     //constructor
-    public SQLUserDAO() throws DataAccessException{
+    public SQLUserDAO() throws DataAccessException {
         initDatabase();
     }
 
@@ -23,7 +21,7 @@ public class SQLUserDAO implements UserDAO{
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Sql, "SQL Exception");
         }
     }
     //var with SQL table
@@ -34,7 +32,7 @@ public class SQLUserDAO implements UserDAO{
               `password` varchar(256) NOT NULL,
               `email` varchar(256) NOT NULL,
               PRIMARY KEY (`username`),
-              INDEX(password)
+              INDEX(password),
               INDEX(email)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
@@ -43,7 +41,7 @@ public class SQLUserDAO implements UserDAO{
 
 
 
-    public void clear() throws DataAccessException{
+    public void clear() throws DataAccessException {
         String sqlStatement = "TRUNCATE user";
         executeUpdate(sqlStatement);
     }
@@ -66,14 +64,14 @@ public class SQLUserDAO implements UserDAO{
                 return 0;
             }
         } catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, String.format("unable to update database: %s, %s", statement, e.getMessage()));
+            throw new DataAccessException(DataAccessException.PossibleExc.Sql, "SQL Exception");
         }
     }
 
 
-    public UserData getUser(String username) throws DataAccessException{
+    public UserData getUser(String username) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT username, username FROM auth WHERE username=?";
+            var statement = "SELECT username, password, email FROM user WHERE username=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 //1 refers to the first questions mark
                 ps.setString(1, username);
@@ -84,7 +82,7 @@ public class SQLUserDAO implements UserDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "getUser method BadRequest");
         }
         return null;
     }
@@ -95,7 +93,7 @@ public class SQLUserDAO implements UserDAO{
         return new UserData(username, password, email);
     }
 
-    public void createUser(UserData userData) throws DataAccessException{
+    public void createUser(UserData userData) throws DataAccessException {
         var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
         int id = executeUpdate(statement, userData.username(), userData.password(), userData.email());
     }

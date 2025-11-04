@@ -7,7 +7,6 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import server.BadRequestException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +53,7 @@ public class GameServiceTest {
         String gameName = "";
 
         //assertNull(gameDataResult);
-        Assertions.assertThrows(BadRequestException.class, ()->gameService.creategame(gameName));
+        Assertions.assertThrows(DataAccessException.class, ()->gameService.creategame(gameName));
         //assertEquals(user.username(), authData.username());
         //assertTrue(!authData.authToken().isEmpty());
     }

@@ -1,9 +1,6 @@
 package service;
 
-import dataaccess.AuthDAO;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
@@ -57,7 +54,7 @@ class UserServiceTest {
         var userService = new UserService(db,auth);
         //var authDataReg = userService.register(user);
         //var authData = userService.login(user);
-        Assertions.assertThrows(UnauthorizedException.class,()->userService.login(user));
+        Assertions.assertThrows(DataAccessException.class,()->userService.login(user));
     }
 
     @Test
@@ -83,7 +80,7 @@ class UserServiceTest {
         //idea 2
         AuthData unlikelyAuthData = new AuthData("unlikely token", "unlikely username");
 
-        Assertions.assertThrows(UnauthorizedException.class, ()->userService.logout(unlikelyAuthData));
+        Assertions.assertThrows(dataaccess.DataAccessException.class, ()->userService.logout(unlikelyAuthData));
     }
 
 

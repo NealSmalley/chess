@@ -1,8 +1,6 @@
 package dataaccess;
 
-import com.google.gson.Gson;
 import model.*;
-import service.UnauthorizedException;
 //imports Connection and SQLException
 import java.sql.*;
 
@@ -26,8 +24,12 @@ public class SQLAuthDAO implements AuthDAO{
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException(dataaccess.DataAccessException.PossibleExc.Sql, "SQL exception");
         }
+        catch (dataaccess.DataAccessException ex) {
+            throw new DataAccessException(dataaccess.DataAccessException.PossibleExc.Sql, "SQL exception");
+        }
+
     }
     //var with SQL table
     private final String[] createStatements = {
@@ -41,7 +43,7 @@ public class SQLAuthDAO implements AuthDAO{
             """
     };
 
-    public void createAuth(AuthData authData) throws DataAccessException{
+    public void createAuth(AuthData authData) throws DataAccessException {
         var statement = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
         int id = executeUpdate(statement, authData.authToken(), authData.username());
     }
@@ -66,17 +68,17 @@ public class SQLAuthDAO implements AuthDAO{
                 return 0;
             }
         } catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, String.format("unable to update database: %s, %s", statement, e.getMessage()));
+            throw new DataAccessException(dataaccess.DataAccessException.PossibleExc.Sql, "Sql exception");
         }
     }
 
 
-    public void clear() throws DataAccessException{
+    public void clear() throws DataAccessException {
             String statement = "TRUNCATE auth";
             executeUpdate(statement);
     }
 
-    public String getAuth(String authToken) throws DataAccessException{
+    public String getAuth(String authToken) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "SELECT authToken, username FROM auth WHERE authToken=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -89,7 +91,7 @@ public class SQLAuthDAO implements AuthDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "BadRequest");
         }
         return null;
     }
@@ -99,26 +101,31 @@ public class SQLAuthDAO implements AuthDAO{
         AuthData auth = new AuthData(authToken, username);
         return auth.authToken();
     }
+    private String readUsernameAuth(ResultSet rs) throws SQLException {
+        var authToken = rs.getString("authToken");
+        var username = rs.getString("username");
+        return username;
+    }
 
-    public void removeAuth(String authToken) throws DataAccessException{
+    public void removeAuth(String authToken) throws DataAccessException {
             var statement = "DELETE FROM auth WHERE authToken=?";
             executeUpdate(statement, authToken);
     }
 
-    public String getUsernameAuth(String authToken) throws DataAccessException{
+    public String getUsernameAuth(String authToken) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authToken, username FROM auth WHERE authToken=?";
+            var statement = "SELECT username, authToken FROM auth WHERE authToken=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 //1 refers to the first questions mark
                 ps.setString(1, authToken);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        return readAuth(rs);
+                        return readUsernameAuth(rs);
                     }
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, String.format("Unable to read data: %s", e.getMessage()));
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "BadRequest");
         }
         return null;
     }

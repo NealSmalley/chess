@@ -1,13 +1,12 @@
 package dataaccess;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
-import service.UnauthorizedException;
 //imports Connection and SQLException
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
@@ -15,9 +14,9 @@ import static java.sql.Types.NULL;
 
 
 
-public class SQLGameDAO {
+public class SQLGameDAO implements GameDAO{
     //constructor
-    public SQLGameDAO() throws DataAccessException{
+    public SQLGameDAO() throws DataAccessException {
         initDatabase();
     }
     //Creates Database
@@ -30,7 +29,7 @@ public class SQLGameDAO {
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException(DataAccessException.PossibleExc.Sql, "SQL exception");
         }
     }
 
@@ -39,10 +38,10 @@ public class SQLGameDAO {
             """
             CREATE TABLE IF NOT EXISTS  game (
               `gameID` int NOT NULL AUTO_INCREMENT,
-              `whiteUsername` varchar(256) NOT NULL,
-              `blackUsername` varchar(256) NOT NULL,
+              `whiteUsername` varchar(256),
+              `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
-              `json` TEXT DEFAULT NULL,
+              `game` TEXT DEFAULT NULL,
               PRIMARY KEY (`gameID`),
               INDEX(whiteUsername),
               INDEX(blackUsername),
@@ -51,12 +50,12 @@ public class SQLGameDAO {
             """
     };
 
-    public void clear() throws DataAccessException{
+    public void clear() throws DataAccessException {
         String sqlStatement = "TRUNCATE game";
-        executeUpdate(sqlStatement);
+        executeUpdateCustom(sqlStatement);
     }
 
-    private int executeUpdate(String statement, Object... params) throws DataAccessException {
+    private int executeUpdateCustom(String statement, Object... params) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
@@ -66,7 +65,7 @@ public class SQLGameDAO {
                     //whiteUsername, blackUsername, gameName
                     else if (param instanceof String p) ps.setString(i + 1, p);
                     //game
-                    else if (param instanceof GameData p) ps.setString(i + 1, p.toString());
+                    else if (param instanceof ChessGame p) ps.setString(i + 1, p.toString());
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
@@ -78,29 +77,44 @@ public class SQLGameDAO {
                 return 0;
             }
         } catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, String.format("unable to update database: %s, %s", statement, e.getMessage()));
+            throw new DataAccessException(DataAccessException.PossibleExc.Sql, "SQL Exception");
         }
     }
 
-    public GameData creategame(GameData gameData) throws DataAccessException{
+    public GameData creategame(GameData gameData) throws DataAccessException {
         //gameID, whiteUsername, blackUsername, gameName, game
         var statement = "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)";
-        int id = executeUpdate(statement, gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
+        int id = executeUpdateCustom(statement, gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
         //in the future you might want to change this function to void
-        return gameData;
+        GameData newGameData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
+        return newGameData;
     }
-    //IMPORTANT!!!! change updategame() to take only a gameData instead of other things
-    public GameData updategame(GameData gameData) throws Exception{
-        var statement = "UPDATE INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)";
-        int id = executeUpdate(statement, gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
-        return gameData;
+    public GameData updategame(GameData gamedata) throws Exception{
+        try (var conn = DatabaseManager.getConnection()) {
+            String sql = "UPDATE game SET whiteUsername = ?, blackUsername = ?, gameName= ?, game = ? WHERE gameID = ?";
+            try (var statement = conn.prepareStatement(sql)) {
+                Gson gson = new Gson();
+                String gameJson = gson.toJson(gamedata.game());
+                statement.setString(1, gamedata.whiteUsername());
+                statement.setString(2, gamedata.blackUsername());
+                statement.setString(3, gamedata.gameName());
+                statement.setString(4, gameJson);
+                statement.setInt(5, gamedata.gameID());
+                int updatedRows = statement.executeUpdate();
+                //throw error if updatedrows is 0
+            }
+        }
+        catch (SQLException e) {
+            throw new DataAccessException(DataAccessException.PossibleExc.Sql, "SQL Exception");
+        }
+        return gamedata;
     }
-    public HashMap<Integer, GameData> listgames() throws DataAccessException{
+
+    public HashMap<Integer, GameData> listgames() throws dataaccess.DataAccessException {
         //list/arraylist to preserve the order
         List<GameData> GameDatas = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName FROM game";
-            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+            try (PreparedStatement ps = conn.prepareStatement("SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game")) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         GameDatas.add(readGame(rs));
@@ -108,7 +122,7 @@ public class SQLGameDAO {
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.ServerError, String.format("Unable to read data: %s", e.getMessage()));
         }
         HashMap<Integer, GameData> map = zipListToMap(GameDatas);
         return map;
@@ -126,12 +140,14 @@ public class SQLGameDAO {
 
     private GameData readGame(ResultSet rs) throws SQLException {
         //gameID, whiteUsername, blackUsername, gameName, game
-        var gameID = rs.getInt("id");
+        var gameID = rs.getInt("gameID");
         var whiteUsername = rs.getString("whiteUsername");
         var blackUsername = rs.getString("blackUsername");
         var gameName = rs.getString("gameName");
-        GameData gameData = new Gson().fromJson("json", GameData.class);
-        return gameData.setId(gameID);
+        String game = rs.getString("game");
+        ChessGame gameData = new Gson().fromJson(game, ChessGame.class);
+        GameData gameDataDeserialized = new GameData(gameID, whiteUsername, blackUsername, gameName, gameData);
+        return gameDataDeserialized;
     }
 
 

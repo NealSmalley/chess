@@ -1,10 +1,12 @@
 package service;
 
-import dataaccess.DataAccessException;
 import dataaccess.AuthDAO;
 import dataaccess.UserDAO;
+import dataaccess.DataAccessException;
+
 import model.AuthData;
 import model.UserData;
+
 
 import java.util.UUID;
 
@@ -21,7 +23,7 @@ public class UserService {
         //line 4
         if (userDao.getUser(user.username()) != null){
             //line 6 & 7
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "already taken");
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Forbidden, "already taken");
         }
         else {
             //line 9
@@ -36,13 +38,13 @@ public class UserService {
         AuthData auth = new AuthData(generateAuthToken(),user.username());
         //User exists
         if (userDao.getUser(user.username()) == null) {
-            throw new UnauthorizedException();
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "user exists already");
         }
         else {
             UserData userdata = userDao.getUser(user.username());
             //password is wrong
             if (!(userdata.password().equals(user.password()))){
-                throw new UnauthorizedException();
+                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "Password is wrong");
             }
             authDao.createAuth(auth);
         }
@@ -53,33 +55,39 @@ public class UserService {
     //if logged in
         String authTokenUser = auth.authToken();
         String authTokenDB = authDao.getAuth(authTokenUser);
-        if (!(authTokenDB.equals(authTokenUser))){
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
+        if (authTokenDB == null){
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "authToken in null");
+        }
+        else if (!(authTokenDB.equals(authTokenUser))){
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
         }
         //remove authToken
         authDao.removeAuth(authTokenUser);
     }
     //checks of authentication token is valid
-    public void authenticatUser(String authTokenUser) throws DataAccessException{
+    public void authenticatUser(String authTokenUser) throws DataAccessException {
         String authTokenDB = authDao.getAuth(authTokenUser);
+        if (authTokenDB == null){
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
+        }
         if (!(authTokenDB.equals(authTokenUser))){
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
         }
     }
-    public String getUsernameAuth(String authToken) throws DataAccessException{
+    public String getUsernameAuth(String authToken) throws DataAccessException {
         String username = authDao.getUsernameAuth(authToken);
         if (username != null) {
             return username;
         }
         else{
-            throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "unable to find username");
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "username is null");
 
         }
 
     }
 
 
-    public void clear() throws DataAccessException{
+    public void clear() throws DataAccessException {
         authDao.clear();
         userDao.clear();
     }

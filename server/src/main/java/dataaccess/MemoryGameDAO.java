@@ -1,10 +1,7 @@
 package dataaccess;
 
 import chess.ChessGame;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import model.GameData;
-import server.BadRequestException;
 
 import java.util.HashMap;
 
@@ -28,37 +25,39 @@ public class MemoryGameDAO implements GameDAO{
     }
 
 
-    public GameData updategame(int gameID, String playerColor, String username) throws Exception{
-
+    public GameData updategame(GameData gamedata) throws Exception{
+        //int gameID, String playerColor, String username
+        int gameID = gamedata.gameID();
+        String blackUsername = gamedata.blackUsername();
+        String whiteUsername = gamedata.whiteUsername();
 
         //get game
         GameData currentGame = games.get(gameID);
         if (currentGame == null){
-            throw new BadRequestException();
+            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "current game is null");
         }
         String currentGameName = currentGame.gameName();
         ChessGame currentgame = currentGame.game();
-        String whiteUsername = currentGame.whiteUsername();
-        String blackUsername = currentGame.blackUsername();
+        String currentwhiteUsername = currentGame.whiteUsername();
+        String currentblackUsername = currentGame.blackUsername();
 
 
         //already taken
-        if (playerColor.equals("BLACK")){
-            if (blackUsername != null){
+        if (blackUsername != null){
+            if (currentblackUsername != null){
                 throw new Exception();
             }
-            blackUsername = username;
+            currentblackUsername = blackUsername;
         }
-        if (playerColor.equals("WHITE")){
-            if (whiteUsername != null){
+        if (whiteUsername != null){
+            if (currentwhiteUsername != null){
                 throw new Exception();
             }
-            whiteUsername = username;
+            currentwhiteUsername = whiteUsername;
         }
-
 
         //update
-        GameData updategamedata = new GameData(gameID, whiteUsername, blackUsername, currentGameName, currentgame);
+        GameData updategamedata = new GameData(gameID, currentwhiteUsername, currentblackUsername, currentGameName, currentgame);
         games.put(gameID, updategamedata);
         return updategamedata;
     }

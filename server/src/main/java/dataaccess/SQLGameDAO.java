@@ -108,8 +108,8 @@ public class SQLGameDAO implements GameDAO{
                     }
                 }
             }
-            String FinalWhiteUser = "";
-            String FinalBlackUser = "";
+            String finalWhiteUser = "";
+            String finalBlackUser = "";
             //obj whiteusername is not empty
             if (gamedata.whiteUsername() != null){
                 //sql whiteusername is not empty
@@ -125,19 +125,19 @@ public class SQLGameDAO implements GameDAO{
 
             //if whiteusername is null
             if (gamedata.whiteUsername() == null){
-                FinalWhiteUser = currentWhiteUser;
+                finalWhiteUser = currentWhiteUser;
             }
             //not null
             else {
-                FinalWhiteUser = gamedata.whiteUsername();
+                finalWhiteUser = gamedata.whiteUsername();
             }
             //if blackusername is null
             if (gamedata.blackUsername() == null){
-                FinalBlackUser = currentBlackUser;
+                finalBlackUser = currentBlackUser;
             }
             //not null
             else {
-                FinalBlackUser = gamedata.blackUsername();
+                finalBlackUser = gamedata.blackUsername();
             }
 
             //sql versions of gameName and game
@@ -151,8 +151,8 @@ public class SQLGameDAO implements GameDAO{
                 //Gson gson = new Gson();
                 //String gameJson = gson.toJson(gamedata.game());
                 //String gameJsonSerialized = gson.toJson(gameJson);
-                statement.setString(1, FinalWhiteUser);
-                statement.setString(2, FinalBlackUser);
+                statement.setString(1, finalWhiteUser);
+                statement.setString(2, finalBlackUser);
                 statement.setString(3, gameName);
                 statement.setString(4, gameJson);
                 statement.setInt(5, gamedata.gameID());
@@ -187,19 +187,19 @@ public class SQLGameDAO implements GameDAO{
 
     public HashMap<Integer, GameData> listgames() throws dataaccess.DataAccessException {
         //list/arraylist to preserve the order
-        List<GameData> GameDatas = new ArrayList<>();
+        List<GameData> gameDatas = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement("SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game")) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        GameDatas.add(readGame(rs));
+                        gameDatas.add(readGame(rs));
                     }
                 }
             }
         } catch (SQLException e) {
             throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
         }
-        HashMap<Integer, GameData> map = zipListToMap(GameDatas);
+        HashMap<Integer, GameData> map = zipListToMap(gameDatas);
         return map;
     }
 

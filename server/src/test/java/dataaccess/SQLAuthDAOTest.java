@@ -88,15 +88,7 @@ public class SQLAuthDAOTest {
         AuthData starterAuth = new AuthData(authToken, "exaUsername");
         sqlAuthDao.createAuth(starterAuth);
         sqlAuthDao.removeAuth(authToken);
-
-        try (var conn = DatabaseManager.getConnection()){
-            try (var statement = conn.prepareStatement("SELECT username, authToken FROM auth WHERE username=?")){
-                statement.setString(1, starterAuth.username());
-                try (var table = statement.executeQuery()){
-                    assertFalse(table.next());
-                }
-            }
-        }
+        databaseConnection(starterAuth);
     }
 
     @Test
@@ -136,6 +128,9 @@ public class SQLAuthDAOTest {
         AuthData starterAuth = new AuthData(authToken, "exaUsername");
         sqlAuthDao.createAuth(starterAuth);
         sqlAuthDao.clear();
+        databaseConnection(starterAuth);
+    }
+    private void databaseConnection(AuthData starterAuth) throws DataAccessException, SQLException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var statement = conn.prepareStatement("SELECT username, authToken FROM auth WHERE username=?")) {
                 statement.setString(1, starterAuth.username());
@@ -145,7 +140,6 @@ public class SQLAuthDAOTest {
             }
         }
     }
-
 
 
 

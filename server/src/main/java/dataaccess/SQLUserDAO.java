@@ -8,11 +8,11 @@ import static java.sql.Types.NULL;
 public class SQLUserDAO implements UserDAO{
     //constructor
     public SQLUserDAO() throws DataAccessException {
-        initDatabase();
+        initUserDatabase();
     }
 
     //Creates Database
-    private void initDatabase() throws DataAccessException {
+    private void initUserDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (Connection conn = DatabaseManager.getConnection()) {
             for (String statement : createStatements) {

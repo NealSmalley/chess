@@ -116,32 +116,8 @@ public class Server {
             ctx.status(200).result();
         }
         catch (dataaccess.DataAccessException ex){
-            //400
-            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.BadRequest)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(400).json(msg);
-            }
-            //401
-            if (ex.getExc() == dataaccess.DataAccessException.PossibleExc.Unauthorized) {
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(401).json(msg);
-            }
-            //500
-            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(500).json(msg);
-            }
+            caseBundleBadUnauthServer(ctx, ex);
         }
-//        //400
-//        catch (DataAccessException ex){
-//                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-//                ctx.status(400).json(msg);
-//            }
-//        //401
-//        catch (DataAccessException ex){
-//            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-//            ctx.status(401).json(msg);
-//        }
         //403
         catch (Exception ex){
             var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
@@ -158,18 +134,21 @@ public class Server {
         }
         //401
         catch (DataAccessException ex){
-            //401
-            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.Unauthorized)) {
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(401).json(msg);
-            }
-            //500
-            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(500).json(msg);
-            }
+            catchBundleUnauthServer(ctx, ex);
         }
 
+    }
+    public void catchBundleUnauthServer(Context ctx, DataAccessException ex){
+        //401
+        if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.Unauthorized)) {
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(401).json(msg);
+        }
+        //500
+        if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(500).json(msg);
+        }
     }
 
     private void createGame(Context ctx){
@@ -192,23 +171,27 @@ public class Server {
             ctx.result(serializer.toJson(gameData));
             ctx.status(200).result();
         }
-        //400
-        catch (dataaccess.DataAccessException ex){
-            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.BadRequest)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(400).json(msg);
-            }
-            //401
-            if (ex.getExc() == dataaccess.DataAccessException.PossibleExc.Unauthorized) {
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(401).json(msg);
-            }
-            //500
-            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(500).json(msg);
-            }
 
+        catch (dataaccess.DataAccessException ex){
+            caseBundleBadUnauthServer(ctx, ex);
+        }
+    }
+    //bundle of catch statements
+    public void caseBundleBadUnauthServer(Context ctx, dataaccess.DataAccessException ex){
+        //400
+        if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.BadRequest)){
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(400).json(msg);
+        }
+        //401
+        if (ex.getExc() == dataaccess.DataAccessException.PossibleExc.Unauthorized) {
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(401).json(msg);
+        }
+        //500
+        if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
+            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+            ctx.status(500).json(msg);
         }
     }
 
@@ -231,15 +214,7 @@ public class Server {
         }
         //401
         catch (dataaccess.DataAccessException ex){
-            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.Unauthorized)) {
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(401).json(msg);
-            }
-            //500
-            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(500).json(msg);
-            }
+            catchBundleUnauthServer(ctx, ex);
         }
 
     }
@@ -304,15 +279,7 @@ public class Server {
                 ctx.status(500).json(msg);
             }
         }
-//        //400
-//        catch (DataAccessException ex){
-//            var errormsg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-//            ctx.status(400).json(errormsg);
-//        }
-//        //401
-//        catch (DataAccessException ex){
-//            var errormsg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-//            ctx.status(401).json(errormsg);
+
 //        }
         //403
         catch (Exception ex){

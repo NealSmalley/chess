@@ -42,7 +42,7 @@ import java.util.Properties;
          * }
          * </code>
          */
-        static Connection getConnection() throws DataAccessException {
+        static public Connection getConnection() throws DataAccessException {
             try {
                 //do not wrap the following line with a try-with-resources
                 var conn = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);

@@ -32,12 +32,11 @@ public class GameServiceTest {
         AuthDAO authDao = new MemoryAuthDAO();
         authDao.createAuth(authData);
         var gameService = new GameService(gameDao, authDao);
-        String gameName = "Test";
+        String gameName = "dataaccessTest";
         Gson gson = new Gson();
         String gameNamejson = gson.toJson(Map.of("gameName", gameName));
         var gameDataResult = gameService.creategame(gameNamejson);
 
-        //Do I need to add more?
         assertNotNull(gameDataResult);
         //assertEquals(user.username(), authData.username());
         assertTrue(!authData.authToken().isEmpty());
@@ -65,7 +64,7 @@ public class GameServiceTest {
         AuthDAO authDao = new MemoryAuthDAO();
         authDao.createAuth(authData);
         var gameService = new GameService(gameData, authDao);
-        String gameName = "Test";
+        String gameName = "dataaccessTest";
         Gson gson = new Gson();
         String gameNamejson = gson.toJson(Map.of("gameName", gameName));
         gameService.creategame(gameNamejson);
@@ -88,7 +87,7 @@ public class GameServiceTest {
         AuthDAO authDao = new MemoryAuthDAO();
         authDao.createAuth(authData);
         var gameService = new GameService(gameData, authDao);
-        String gameName = "Test";
+        String gameName = "dataaccessTest";
         Gson gson = new Gson();
         String gameNamejson = gson.toJson(Map.of("gameName", gameName));
         gameService.creategame(gameNamejson);
@@ -112,7 +111,7 @@ public class GameServiceTest {
         AuthDAO authDao = new MemoryAuthDAO();
         authDao.createAuth(authData);
         var gameService = new GameService(gameData, authDao);
-        String gameName = "Test";
+        String gameName = "dataaccessTest";
         Gson gson = new Gson();
         String gameNamejson = gson.toJson(Map.of("gameName", gameName));
 
@@ -133,7 +132,7 @@ public class GameServiceTest {
         AuthDAO authDao = new MemoryAuthDAO();
         authDao.createAuth(authData);
         var gameService = new GameService(gameData, authDao);
-        String gameName = "Test";
+        String gameName = "dataaccessTest";
         Gson gson = new Gson();
         String gameNamejson = gson.toJson(Map.of("gameName", gameName));
         var gameDataResult = gameService.creategame(gameNamejson);

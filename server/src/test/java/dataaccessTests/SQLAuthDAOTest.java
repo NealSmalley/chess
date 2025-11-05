@@ -1,4 +1,4 @@
-package dataaccessTest;
+package dataaccessTests;
 
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;

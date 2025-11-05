@@ -1,12 +1,8 @@
-package dataaccessTest;
+package dataaccessTests;
 
-import chess.ChessGame;
-import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
-import dataaccess.SQLAuthDAO;
 import dataaccess.SQLUserDAO;
-import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

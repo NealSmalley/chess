@@ -1,13 +1,11 @@
-package dataaccessTest;
+package dataaccessTests;
 
 import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
-import dataaccess.SQLAuthDAO;
 import dataaccess.SQLGameDAO;
-import model.AuthData;
 import model.GameData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -15,9 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 

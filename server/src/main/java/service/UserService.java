@@ -38,7 +38,7 @@ public class UserService {
                 authDao.createAuth(auth);
             }
             catch (DataAccessException ex) {
-                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "400: unable to register: register method");
+                throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "400: unable to register: register method");
             }
         }
         //line 12

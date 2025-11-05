@@ -63,12 +63,12 @@ public class SQLGameDAO implements GameDAO{
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
                     //gameID
-                    if (param instanceof Integer p) ps.setInt(i + 1, p);
+                    if (param instanceof Integer p) {ps.setInt(i + 1, p);}
                     //whiteUsername, blackUsername, gameName
-                    else if (param instanceof String p) ps.setString(i + 1, p);
+                    else if (param instanceof String p) {ps.setString(i + 1, p);}
                     //game
-                    else if (param instanceof ChessGame p) ps.setString(i + 1, gson.toJson(p));
-                    else if (param == null) ps.setNull(i + 1, NULL);
+                    else if (param instanceof ChessGame p) {ps.setString(i + 1, gson.toJson(p));}
+                    else if (param == null) {ps.setNull(i + 1, NULL);}
                 }
                 ps.executeUpdate();
 
@@ -110,7 +110,7 @@ public class SQLGameDAO implements GameDAO{
                         currentWhiteUser = rs.getString("whiteUsername");
                         currentBlackUser = rs.getString("blackUsername");
                     } else{
-                        throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, " updategame() issue with whiteUsername or blackUsername");
+                        throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "issue white/black Username");
                     }
                 }
             }

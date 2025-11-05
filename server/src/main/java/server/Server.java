@@ -234,7 +234,7 @@ public class Server {
 
 
             if (gameInfo.equals("{}") || authToken == null || playerColor == null){
-                throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "gameinfo is empty set or authToken is null or playerColor is null");
+                throw new DataAccessException(DataAccessException.PossibleExc.BadRequest,"gameinfo{}||authToken,playerColor null");
             }
             if ((!playerColor.equals("BLACK")) && (!playerColor.equals("WHITE"))){
                 throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "player color is not black or white");

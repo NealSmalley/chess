@@ -53,11 +53,11 @@ public class SQLAuthDAO implements AuthDAO{
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
+                    if (param instanceof String p) {ps.setString(i + 1, p);}
                     //might need later but for now I don't
 //                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
 //                    else if (param instanceof PetType p) ps.setString(i + 1, p.toString());
-                    else if (param == null) ps.setNull(i + 1, NULL);
+                    else if (param == null) {ps.setNull(i + 1, NULL);}
                 }
                 ps.executeUpdate();
 

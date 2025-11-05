@@ -49,7 +49,7 @@ import java.util.Properties;
                 conn.setCatalog(databaseName);
                 return conn;
             } catch (SQLException ex) {
-                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.ServerError, "500: ServerError exception: database error");
+                throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: ServerError exception: database error");
             }
         }
 

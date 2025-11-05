@@ -48,7 +48,7 @@ public class UserService {
         AuthData auth = new AuthData(generateAuthToken(),user.username());
         //User doesn't exist
         if (userDao.getUser(user.username()) == null) {
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "user exists already");
+            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "user exists already");
         }
         //User exists
         else {
@@ -58,7 +58,7 @@ public class UserService {
                 authDao.createAuth(auth);
             }
             else{
-                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "Password is wrong");
+                throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "Password is wrong");
             }
         }
         return auth;
@@ -69,10 +69,10 @@ public class UserService {
         String authTokenUser = auth.authToken();
         String authTokenDB = authDao.getAuth(authTokenUser);
         if (authTokenDB == null){
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "authToken in null");
+            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authToken in null");
         }
         else if (!(authTokenDB.equals(authTokenUser))){
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
+            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
         }
         //remove authToken
         authDao.removeAuth(authTokenUser);
@@ -81,10 +81,10 @@ public class UserService {
     public void authenticatUser(String authTokenUser) throws DataAccessException {
         String authTokenDB = authDao.getAuth(authTokenUser);
         if (authTokenDB == null){
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
+            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
         }
         if (!(authTokenDB.equals(authTokenUser))){
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
+            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
         }
     }
     public String getUsernameAuth(String authToken) throws DataAccessException {
@@ -93,7 +93,7 @@ public class UserService {
             return username;
         }
         else{
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "username is null");
+            throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "username is null");
 
         }
 

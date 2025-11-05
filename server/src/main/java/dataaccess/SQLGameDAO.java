@@ -86,7 +86,13 @@ public class SQLGameDAO implements GameDAO{
     public GameData creategame(GameData gameData) throws DataAccessException {
         //gameID, whiteUsername, blackUsername, gameName, game
         var statement = "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)";
-        int id = executeUpdateCustom(statement, gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
+        var gameId = gameData.gameID();
+        var whiteUsername = gameData.whiteUsername();
+        var blackUsername = gameData.blackUsername();
+        var gameName = gameData.gameName();
+        var gameDataGame = gameData.game();
+
+        int id = executeUpdateCustom(statement, gameId, whiteUsername, blackUsername, gameName, gameDataGame);
         //in the future you might want to change this function to void
         GameData newGameData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
         return newGameData;

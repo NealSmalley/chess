@@ -30,10 +30,10 @@ public class UserService {
             try {
                 String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
                 var encryptedUser = new UserData(user.username(), hashedPassword, user.email());
-                userDao.createUser(encryptedUser);
+
 
                 //line 9
-                //userDao.createUser(user);
+                userDao.createUser(encryptedUser);
                 //line 11
                 authDao.createAuth(auth);
             }
@@ -53,10 +53,6 @@ public class UserService {
         //User exists
         else {
             UserData userdata = userDao.getUser(user.username());
-            //password is wrong
-//            if (!(userdata.password().equals(user.password()))){
-//                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "Password is wrong");
-//            }
             //encoded version
             if (BCrypt.checkpw(user.password(),userdata.password())){
                 authDao.createAuth(auth);

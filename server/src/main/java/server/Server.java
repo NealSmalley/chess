@@ -32,9 +32,6 @@ public class Server {
             this.authDao = new SQLAuthDAO();
             this.gameDao = new SQLGameDAO();
         }
-//        catch (DataAccessException e) {
-//            throw new RuntimeException(e);
-//        }
         catch (DataAccessException ex){
             throw new RuntimeException(ex);
         }
@@ -42,7 +39,6 @@ public class Server {
 
         this.userService = new UserService(userDao, authDao);
         this.gameService = new GameService(gameDao, authDao);
-        //var userService = new UserService(dataAccess);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 

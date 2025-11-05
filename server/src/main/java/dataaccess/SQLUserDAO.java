@@ -14,9 +14,9 @@ public class SQLUserDAO implements UserDAO{
     //Creates Database
     private void initUserDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
-        try (Connection conn = DatabaseManager.getConnection()) {
-            for (String statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            for (String specificStatement : createStatements) {
+                try (var preparedStatement = connection.prepareStatement(specificStatement)) {
                     preparedStatement.executeUpdate();
                 }
             }

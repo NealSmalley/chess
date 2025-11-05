@@ -148,9 +148,6 @@ public class SQLGameDAO implements GameDAO{
             //Update
             String sql = "UPDATE game SET whiteUsername = ?, blackUsername = ?, gameName= ?, game = ? WHERE gameID = ?";
             try (var statement = conn.prepareStatement(sql)) {
-                //Gson gson = new Gson();
-                //String gameJson = gson.toJson(gamedata.game());
-                //String gameJsonSerialized = gson.toJson(gameJson);
                 statement.setString(1, finalWhiteUser);
                 statement.setString(2, finalBlackUser);
                 statement.setString(3, gameName);

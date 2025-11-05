@@ -21,7 +21,7 @@ public class SQLUserDAO implements UserDAO{
                 }
             }
         } catch (SQLException ex) {
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Sql, "SQL Exception");
+            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
         }
     }
     //var with SQL table
@@ -64,7 +64,7 @@ public class SQLUserDAO implements UserDAO{
                 return 0;
             }
         } catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.Sql, "SQL Exception");
+            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
         }
     }
 
@@ -81,8 +81,8 @@ public class SQLUserDAO implements UserDAO{
                     }
                 }
             }
-        } catch (Exception e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "getUser method BadRequest");
+        } catch (SQLException e) {
+            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
         }
         return null;
     }

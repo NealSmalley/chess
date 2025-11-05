@@ -21,8 +21,7 @@ public class DataAccessException extends Exception{
         BadRequest,
         Unauthorized,
         Forbidden,
-        ServerError,
-        Sql
+        ServerError
     }
     //Exception private var
     private final DataAccessException.PossibleExc exc;

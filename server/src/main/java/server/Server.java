@@ -89,6 +89,11 @@ public class Server {
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(403).json(msg);
             }
+            //500
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(500).json(msg);
+            }
         }
         //403
         catch (Exception ex){
@@ -121,6 +126,11 @@ public class Server {
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(401).json(msg);
             }
+            //500
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(500).json(msg);
+            }
         }
 //        //400
 //        catch (DataAccessException ex){
@@ -148,9 +158,18 @@ public class Server {
         }
         //401
         catch (DataAccessException ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(401).json(msg);
+            //401
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.Unauthorized)) {
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(401).json(msg);
+            }
+            //500
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(500).json(msg);
+            }
         }
+
     }
 
     private void createGame(Context ctx){
@@ -184,6 +203,12 @@ public class Server {
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(401).json(msg);
             }
+            //500
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(500).json(msg);
+            }
+
         }
     }
 
@@ -205,10 +230,18 @@ public class Server {
             ctx.status(200).result();
         }
         //401
-        catch (Exception ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(401).json(msg);
+        catch (dataaccess.DataAccessException ex){
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.Unauthorized)) {
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(401).json(msg);
+            }
+            //500
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(500).json(msg);
+            }
         }
+
     }
 
 
@@ -265,6 +298,11 @@ public class Server {
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(403).json(msg);
             }
+            //500
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(500).json(msg);
+            }
         }
 //        //400
 //        catch (DataAccessException ex){
@@ -293,8 +331,18 @@ public class Server {
             ctx.status(200);
         }
         catch (DataAccessException ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(400).json(msg);
+            //400
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.BadRequest)){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(400).json(msg);
+            }
+            //500
+            if ((ex.getExc() == dataaccess.DataAccessException.PossibleExc.ServerError)){
+                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+                ctx.status(500).json(msg);
+            }
+//            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+//            ctx.status(400).json(msg);
         }
     }
         public int run(int desiredPort) {

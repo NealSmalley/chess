@@ -6,6 +6,7 @@ import dataaccess.DataAccessException;
 
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 
 import java.util.UUID;
@@ -26,27 +27,43 @@ public class UserService {
             throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Forbidden, "already taken");
         }
         else {
-            //line 9
-            userDao.createUser(user);
-            //line 11
-            authDao.createAuth(auth);
+            try {
+                String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+                var encryptedUser = new UserData(user.username(), hashedPassword, user.email());
+                userDao.createUser(encryptedUser);
+
+                //line 9
+                //userDao.createUser(user);
+                //line 11
+                authDao.createAuth(auth);
+            }
+            catch (DataAccessException ex) {
+                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "400: unable to register: register method");
+            }
         }
         //line 12
         return auth;
     }
     public AuthData login(UserData user) throws Exception {
         AuthData auth = new AuthData(generateAuthToken(),user.username());
-        //User exists
+        //User doesn't exist
         if (userDao.getUser(user.username()) == null) {
             throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "user exists already");
         }
+        //User exists
         else {
             UserData userdata = userDao.getUser(user.username());
             //password is wrong
-            if (!(userdata.password().equals(user.password()))){
+//            if (!(userdata.password().equals(user.password()))){
+//                throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "Password is wrong");
+//            }
+            //encoded version
+            if (BCrypt.checkpw(user.password(),userdata.password())){
+                authDao.createAuth(auth);
+            }
+            else{
                 throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Unauthorized, "Password is wrong");
             }
-            authDao.createAuth(auth);
         }
         return auth;
     }

@@ -30,7 +30,7 @@ public class SQLGameDAO implements GameDAO{
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(DataAccessException.PossibleExc.Sql, "SQL exception");
+            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
         }
     }
 
@@ -79,7 +79,7 @@ public class SQLGameDAO implements GameDAO{
                 return 0;
             }
         } catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.Sql, "SQL Exception");
+            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
         }
     }
 
@@ -161,7 +161,7 @@ public class SQLGameDAO implements GameDAO{
             }
         }
         catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.Sql, "SQL Exception");
+            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
         }
         return gamedata;
     }
@@ -197,7 +197,7 @@ public class SQLGameDAO implements GameDAO{
                 }
             }
         } catch (SQLException e) {
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Sql, "sql exception listgames");
+            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
         }
         HashMap<Integer, GameData> map = zipListToMap(GameDatas);
         return map;

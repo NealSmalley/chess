@@ -6,6 +6,7 @@ import model.GameData;
 import model.GameList;
 import model.UserData;
 import ui.exception.DataAccessException;
+import ui.server.PrintBoard;
 import ui.server.ServerFacade;
 
 import java.util.Arrays;
@@ -149,6 +150,8 @@ public class LoginClient {
             if (inGameList(gamenumber)){
                 String color = params[2];
                 serverFacade.join(gamenumber, color, gameNumberMap);
+                PrintBoard board = new PrintBoard();
+                board.printBoard(color);
                 return gamenumber + color;
             }
         }

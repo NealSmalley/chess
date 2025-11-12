@@ -21,7 +21,7 @@ public class GameService {
     public GameData creategame(String gameName) throws DataAccessException {
         //bad request
         if (gameName.equals("")){
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "gameName empty");
+            throw new dataaccess.DataAccessException(DataAccessException.PosExc.BadRequest, "gameName empty");
         }
         //Json string to string
         JsonObject obj = JsonParser.parseString(gameName).getAsJsonObject();

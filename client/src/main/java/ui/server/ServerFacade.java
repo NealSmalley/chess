@@ -2,14 +2,15 @@ package ui.server;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import model.*;
 import ui.exception.DataAccessException;
-
 
 import java.net.URI;
 import java.net.http.*;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Map;
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
@@ -18,19 +19,65 @@ public class ServerFacade {
     public ServerFacade(String url){
         serverUrl = url;
     }
-    public ChessGame create(String gameName) throws DataAccessException {
+    //generic type takes objects(gameData,etc) and strings
+    private <T> String serializerFunc(T input){
         Gson serializer = new Gson();
-        String gameNameSerialized = serializer.toJson(gameName);
+        return serializer.toJson(input);
+    }
+
+
+    public GameData createGame(String gameName) throws DataAccessException {
+        String gameNameSerialized = serializerFunc(gameName);
         HttpRequest req = buildRequest("POST","/game", gameNameSerialized);
         HttpResponse<String> resServer = sendRequest(req);
-        //What is the responseClass suppose to be?
-        return handleResponse(resServer, null);
+        return handleResponse(resServer, GameData.class);
     }
 
-    public void list(){
-
+    public GameList listGame() throws DataAccessException{
+        HttpRequest req = buildRequest("GET", "/game", null);
+        HttpResponse<String> resServer = sendRequest(req);
+        return handleResponse(resServer, GameList.class);
     }
 
+    public AuthData register(UserData userdata) throws DataAccessException{
+        String userdataSerialized = serializerFunc(userdata);
+        HttpRequest req = buildRequest("POST", "/user", userdataSerialized);
+        HttpResponse<String> resServer = sendRequest(req);
+        AuthData authdata = handleResponse(resServer, AuthData.class);
+        return authdata;
+    }
+
+    public AuthData login(UserData userdata) throws DataAccessException {
+        String userdataSerialized = serializerFunc(userdata);
+        HttpRequest req = buildRequest("POST", "/session", userdataSerialized);
+        HttpResponse<String> resServer = sendRequest(req);
+        AuthData authdata = handleResponse(resServer, AuthData.class);
+        return authdata;
+    }
+    public void join(int gameNumber, String color, Map<Integer, Integer> gameNumberMap) throws DataAccessException{
+        int gameID = gameNumberMap.get(gameNumber);
+        JoinGameData joinGameData = new JoinGameData(gameID, color);
+        String joinGameSerialized = serializerFunc(joinGameData);
+        HttpRequest req = buildRequest("PUT", "/game", joinGameSerialized);
+        HttpResponse<String> resServer = sendRequest(req);
+        handleResponse(resServer, AuthData.class);
+    }
+    public void logout() throws DataAccessException{
+        //do I need to incorporate authTokens in the header
+        HttpRequest req = buildRequest("DELETE", "/session", null);
+        HttpResponse<String> resServer = sendRequest(req);
+        handleResponse(resServer, AuthData.class);
+    }
+
+
+
+//    javalin.post("/user", this::register);
+//    javalin.post("/session", this::login);
+//    javalin.delete("/session", this::logout);
+//    javalin.get("/game", this::listGame);
+//    javalin.post("/game", this::createGame);
+//    javalin.put("/game", this::joinGame);
+//    javalin.delete("/db", this::clearApplication);
 
 
     private HttpRequest buildRequest(String method, String path, Object body) {
@@ -75,7 +122,9 @@ public class ServerFacade {
             }
             throw new DataAccessException(DataAccessException.fromHttpStatusCode(status),"another failure: "+status);
         }
+        //data in the body?
         if (responseClass != null){
+            //returns as the responseClass
             return new Gson().fromJson(response.body(), responseClass);
         }
         return null;

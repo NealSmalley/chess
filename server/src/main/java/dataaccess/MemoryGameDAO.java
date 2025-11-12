@@ -34,7 +34,7 @@ public class MemoryGameDAO implements GameDAO{
         //get game
         GameData currentGame = games.get(gameID);
         if (currentGame == null){
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.BadRequest, "current game is null");
+            throw new dataaccess.DataAccessException(DataAccessException.PosExc.BadRequest, "current game is null");
         }
         String currentGameName = currentGame.gameName();
         ChessGame currentgame = currentGame.game();

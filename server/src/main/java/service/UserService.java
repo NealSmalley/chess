@@ -24,7 +24,7 @@ public class UserService {
         //line 4
         if (userDao.getUser(user.username()) != null){
             //line 6 & 7
-            throw new dataaccess.DataAccessException(dataaccess.DataAccessException.PossibleExc.Forbidden, "already taken");
+            throw new dataaccess.DataAccessException(DataAccessException.PosExc.Forbidden, "already taken");
         }
         else {
             try {
@@ -38,7 +38,7 @@ public class UserService {
                 authDao.createAuth(auth);
             }
             catch (DataAccessException ex) {
-                throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "400: unable to register: register method");
+                throw new DataAccessException(DataAccessException.PosExc.BadRequest, "400: unable to register: register method");
             }
         }
         //line 12
@@ -48,7 +48,7 @@ public class UserService {
         AuthData auth = new AuthData(generateAuthToken(),user.username());
         //User doesn't exist
         if (userDao.getUser(user.username()) == null) {
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "user exists already");
+            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "user exists already");
         }
         //User exists
         else {
@@ -58,7 +58,7 @@ public class UserService {
                 authDao.createAuth(auth);
             }
             else{
-                throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "Password is wrong");
+                throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "Password is wrong");
             }
         }
         return auth;
@@ -69,10 +69,10 @@ public class UserService {
         String authTokenUser = auth.authToken();
         String authTokenDB = authDao.getAuth(authTokenUser);
         if (authTokenDB == null){
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authToken in null");
+            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authToken in null");
         }
         else if (!(authTokenDB.equals(authTokenUser))){
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
+            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authTokens don't match");
         }
         //remove authToken
         authDao.removeAuth(authTokenUser);
@@ -81,10 +81,10 @@ public class UserService {
     public void authenticatUser(String authTokenUser) throws DataAccessException {
         String authTokenDB = authDao.getAuth(authTokenUser);
         if (authTokenDB == null){
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
+            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authTokens don't match");
         }
         if (!(authTokenDB.equals(authTokenUser))){
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authTokens don't match");
+            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authTokens don't match");
         }
     }
     public String getUsernameAuth(String authToken) throws DataAccessException {
@@ -93,7 +93,7 @@ public class UserService {
             return username;
         }
         else{
-            throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "username is null");
+            throw new DataAccessException(DataAccessException.PosExc.BadRequest, "username is null");
 
         }
 

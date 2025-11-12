@@ -8,7 +8,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -30,7 +29,7 @@ public class SQLGameDAO implements GameDAO{
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
         }
     }
 
@@ -79,7 +78,7 @@ public class SQLGameDAO implements GameDAO{
                 return 0;
             }
         } catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
         }
     }
 
@@ -110,7 +109,7 @@ public class SQLGameDAO implements GameDAO{
                         currentWhiteUser = rs.getString("whiteUsername");
                         currentBlackUser = rs.getString("blackUsername");
                     } else{
-                        throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "issue white/black Username");
+                        throw new DataAccessException(DataAccessException.PosExc.BadRequest, "issue white/black Username");
                     }
                 }
             }
@@ -120,12 +119,12 @@ public class SQLGameDAO implements GameDAO{
             if (gamedata.whiteUsername() != null){
                 //sql whiteusername is not empty
                 if (currentWhiteUser != null && !currentWhiteUser.isEmpty()){
-                    throw new DataAccessException(DataAccessException.PossibleExc.Forbidden, "403: Join Steal Team Color Exception");
+                    throw new DataAccessException(DataAccessException.PosExc.Forbidden, "403: Join Steal Team Color Exception");
                 }
             }
             if (gamedata.blackUsername() != null){
                 if (currentBlackUser != null && !currentBlackUser.isEmpty()){
-                    throw new DataAccessException(DataAccessException.PossibleExc.Forbidden, "403: Join Steal Team Color Exception");
+                    throw new DataAccessException(DataAccessException.PosExc.Forbidden, "403: Join Steal Team Color Exception");
                 }
             }
 
@@ -164,7 +163,7 @@ public class SQLGameDAO implements GameDAO{
             }
         }
         catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
         }
         return gamedata;
     }
@@ -180,7 +179,7 @@ public class SQLGameDAO implements GameDAO{
                     //gameName = rs.getString("gameName");
                     //gameJson = rs.getString("game");
                 } else{
-                    throw new DataAccessException(DataAccessException.PossibleExc.BadRequest, "gameName or game doesn't exist");
+                    throw new DataAccessException(DataAccessException.PosExc.BadRequest, "gameName or game doesn't exist");
                 }
             }
         }
@@ -200,7 +199,7 @@ public class SQLGameDAO implements GameDAO{
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
         }
         HashMap<Integer, GameData> map = zipListToMap(gameDatas);
         return map;

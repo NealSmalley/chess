@@ -26,7 +26,7 @@ import java.util.Properties;
                  var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             } catch (SQLException ex) {
-                throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: ServerError Exception: database Error");
+                throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: ServerError Exception: database Error");
             }
         }
 
@@ -49,7 +49,7 @@ import java.util.Properties;
                 conn.setCatalog(databaseName);
                 return conn;
             } catch (SQLException ex) {
-                throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: ServerError exception: database error");
+                throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: ServerError exception: database error");
             }
         }
 

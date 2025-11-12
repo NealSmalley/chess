@@ -6,25 +6,25 @@ package dataaccess;
 public class DataAccessException extends Exception{
 
     //possible Exceptions
-    public enum PossibleExc {
+    public enum PosExc {
         BadRequest,
         Unauthorized,
         Forbidden,
         ServerError
     }
     //Exception private var
-    private final DataAccessException.PossibleExc exc;
+    private final PosExc exc;
 
-    public DataAccessException(DataAccessException.PossibleExc exc, String message) {
+    public DataAccessException(PosExc exc, String message) {
         super(message);
         this.exc = exc;
     }
-    public DataAccessException(DataAccessException.PossibleExc exc, String message, Throwable ex) {
+    public DataAccessException(PosExc exc, String message, Throwable ex) {
         super(message, ex);
         this.exc = exc;
     }
     //getter
-    public PossibleExc getExc(){
+    public PosExc getExc(){
         return exc;
     }
 }

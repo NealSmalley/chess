@@ -24,10 +24,10 @@ public class SQLAuthDAO implements AuthDAO{
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
         }
         catch (dataaccess.DataAccessException ex) {
-            throw new DataAccessException(dataaccess.DataAccessException.PossibleExc.ServerError, "500: ServerError exception: database error");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: ServerError exception: database error");
         }
 
     }
@@ -68,10 +68,10 @@ public class SQLAuthDAO implements AuthDAO{
                 return 0;
             }
         } catch (SQLException e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
         }
         catch (DataAccessException ex){
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
         }
     }
 
@@ -94,7 +94,7 @@ public class SQLAuthDAO implements AuthDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
         }
         return null;
     }
@@ -128,7 +128,7 @@ public class SQLAuthDAO implements AuthDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(DataAccessException.PossibleExc.ServerError, "500: getUser method serverError");
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
         }
         return null;
     }

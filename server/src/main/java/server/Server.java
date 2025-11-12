@@ -2,20 +2,17 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.*;
-import exception.DataAccessException;
+import dataaccess.DataAccessException;
 import io.javalin.*;
 import io.javalin.http.*;
 
-import model.AuthData;
-import model.GameData;
-import model.UserData;
+import model.*;
 
 import service.GameService;
 import service.UserService;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Server {
 
@@ -32,7 +29,7 @@ public class Server {
             this.authDao = new SQLAuthDAO();
             this.gameDao = new SQLGameDAO();
         }
-        catch (exception.DataAccessException ex){
+        catch (DataAccessException ex){
             throw new RuntimeException(ex);
         }
 
@@ -64,7 +61,7 @@ public class Server {
             UserData req = serializer.fromJson(reqJson, UserData.class);
             //pass back an AuthData
             if (req.username() == null || req.email() == null || req.password() == null){
-                throw new exception.DataAccessException(exception.DataAccessException.PosExc.BadRequest, "username or email or password is null");
+                throw new DataAccessException(DataAccessException.PosExc.BadRequest, "username or email or password is null");
             }
             // call to the service and register
             //line 3
@@ -74,19 +71,19 @@ public class Server {
             ctx.status(200).result();
         }
         //400
-        catch (exception.DataAccessException ex){
+        catch (DataAccessException ex){
             //400
-            if ((ex.getExc() == exception.DataAccessException.PosExc.BadRequest)){
+            if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(400).json(msg);
             }
             //403
-            if ((ex.getExc() == exception.DataAccessException.PosExc.Forbidden)){
+            if ((ex.getExc() == DataAccessException.PosExc.Forbidden)){
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(403).json(msg);
             }
             //500
-            if ((ex.getExc() == exception.DataAccessException.PosExc.ServerError)){
+            if ((ex.getExc() == DataAccessException.PosExc.ServerError)){
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(500).json(msg);
             }
@@ -104,14 +101,14 @@ public class Server {
             String reqJson = ctx.body();
             UserData req = serializer.fromJson(reqJson, UserData.class);
             if (req.username() == null || req.password() == null){
-                throw new exception.DataAccessException(exception.DataAccessException.PosExc.BadRequest, "username or password is null");
+                throw new DataAccessException(DataAccessException.PosExc.BadRequest, "username or password is null");
             }
             AuthData authData = userService.login(req);
 
             ctx.result(serializer.toJson(authData));
             ctx.status(200).result();
         }
-        catch (exception.DataAccessException ex){
+        catch (DataAccessException ex){
             caseBundleBadUnauthServer(ctx, ex);
         }
         //403
@@ -129,19 +126,19 @@ public class Server {
             ctx.status(200).result();
         }
         //401
-        catch (exception.DataAccessException ex){
+        catch (DataAccessException ex){
             catchBundleUnauthServer(ctx, ex);
         }
 
     }
-    public void catchBundleUnauthServer(Context ctx, exception.DataAccessException ex){
+    public void catchBundleUnauthServer(Context ctx, DataAccessException ex){
         //401
-        if ((ex.getExc() == exception.DataAccessException.PosExc.Unauthorized)) {
+        if ((ex.getExc() == DataAccessException.PosExc.Unauthorized)) {
             var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
             ctx.status(401).json(msg);
         }
         //500
-        if ((ex.getExc() == exception.DataAccessException.PosExc.ServerError)){
+        if ((ex.getExc() == DataAccessException.PosExc.ServerError)){
             var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
             ctx.status(500).json(msg);
         }
@@ -153,10 +150,10 @@ public class Server {
             String authToken = ctx.header("authorization");
             String gameName = ctx.body();
             if (gameName.equals("{}")){
-                throw new exception.DataAccessException(exception.DataAccessException.PosExc.BadRequest, "gameName is emptyset or authToken is null");
+                throw new DataAccessException(DataAccessException.PosExc.BadRequest, "gameName is emptyset or authToken is null");
             }
             if (authToken == null){
-                throw new exception.DataAccessException(exception.DataAccessException.PosExc.Unauthorized, "gameName is emptyset or authToken is null");
+                throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "gameName is emptyset or authToken is null");
             }
 
             //Authenticate Authtoken
@@ -168,24 +165,24 @@ public class Server {
             ctx.status(200).result();
         }
 
-        catch (exception.DataAccessException ex){
+        catch (DataAccessException ex){
             caseBundleBadUnauthServer(ctx, ex);
         }
     }
     //bundle of catch statements
-    public void caseBundleBadUnauthServer(Context ctx, exception.DataAccessException ex){
+    public void caseBundleBadUnauthServer(Context ctx, DataAccessException ex){
         //400
-        if ((ex.getExc() == exception.DataAccessException.PosExc.BadRequest)){
+        if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){
             var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
             ctx.status(400).json(msg);
         }
         //401
-        if (ex.getExc() == exception.DataAccessException.PosExc.Unauthorized) {
+        if (ex.getExc() == DataAccessException.PosExc.Unauthorized) {
             var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
             ctx.status(401).json(msg);
         }
         //500
-        if ((ex.getExc() == exception.DataAccessException.PosExc.ServerError)){
+        if ((ex.getExc() == DataAccessException.PosExc.ServerError)){
             var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
             ctx.status(500).json(msg);
         }
@@ -204,12 +201,13 @@ public class Server {
             HashMap<Integer, GameData> games = gameService.listgames();
 
             Collection<GameData> gameList = games.values();
-            String json = serializer.toJson(Map.of("games", gameList));
+            //Map.of("games", gameList) -> GameList
+            String json = serializer.toJson(new GameList(gameList));
             ctx.result(json);
             ctx.status(200).result();
         }
         //401
-        catch (exception.DataAccessException ex){
+        catch (DataAccessException ex){
             catchBundleUnauthServer(ctx, ex);
         }
 
@@ -218,27 +216,27 @@ public class Server {
 
 
     //helper handler for joinGame
-    private static class MultiVars {
-        int gameID;
-        String playerColor;
-    }
+//    private static class JoinGameData {
+//        int gameID;
+//        String playerColor;
+//    }
 
     private void joinGame(Context ctx){
         try {
             Gson serializer = new Gson();
             String gameInfo = ctx.body();
-            MultiVars info = serializer.fromJson(gameInfo,MultiVars.class);
+            JoinGameData info = serializer.fromJson(gameInfo, JoinGameData.class);
             String authToken = ctx.header("authorization");
 
-            int gameID = info.gameID;
-            String playerColor = info.playerColor;
+            int gameID = info.gameID();
+            String playerColor = info.playerColor();
 
 
             if (gameInfo.equals("{}") || authToken == null || playerColor == null){
-                throw new exception.DataAccessException(exception.DataAccessException.PosExc.BadRequest,"gameinfo{}||authToken,playerColor null");
+                throw new DataAccessException(DataAccessException.PosExc.BadRequest,"gameinfo{}||authToken,playerColor null");
             }
             if ((!playerColor.equals("BLACK")) && (!playerColor.equals("WHITE"))){
-                throw new exception.DataAccessException(exception.DataAccessException.PosExc.BadRequest, "player color is not black or white");
+                throw new DataAccessException(DataAccessException.PosExc.BadRequest, "player color is not black or white");
             }
 
             //Authenticate Authtoken
@@ -253,24 +251,24 @@ public class Server {
             ctx.status(200).result();
 
         }
-        catch (exception.DataAccessException ex){
+        catch (DataAccessException ex){
             //400
-            if ((ex.getExc() == exception.DataAccessException.PosExc.BadRequest)){
+            if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(400).json(msg);
             }
             //401
-            if (ex.getExc() == exception.DataAccessException.PosExc.Unauthorized) {
+            if (ex.getExc() == DataAccessException.PosExc.Unauthorized) {
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(401).json(msg);
             }
             //403
-            if (ex.getExc() == exception.DataAccessException.PosExc.Forbidden) {
+            if (ex.getExc() == DataAccessException.PosExc.Forbidden) {
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(403).json(msg);
             }
             //500
-            if ((ex.getExc() == exception.DataAccessException.PosExc.ServerError)){
+            if ((ex.getExc() == DataAccessException.PosExc.ServerError)){
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(500).json(msg);
             }
@@ -287,15 +285,15 @@ public class Server {
 
 
     //hander clear application
-    private void clearApplication(Context ctx) throws exception.DataAccessException {
+    private void clearApplication(Context ctx) throws DataAccessException {
         try {
             userService.clear();
             gameService.clear();
             ctx.status(200);
         }
-        catch (exception.DataAccessException ex){
+        catch (DataAccessException ex){
             //400
-            if ((ex.getExc() == exception.DataAccessException.PosExc.BadRequest)){
+            if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(400).json(msg);
             }

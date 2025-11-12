@@ -25,7 +25,7 @@ public class MemoryAuthDAO implements AuthDAO{
             authToken = authData.authToken();
         }
         else{
-            throw new DataAccessException(DataAccessException.PossibleExc.Unauthorized, "authToken is null");
+            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authToken is null");
         }
         return authToken;
     }

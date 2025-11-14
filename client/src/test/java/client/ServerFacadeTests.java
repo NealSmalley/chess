@@ -1,6 +1,6 @@
 package client;
 
-import model.Client.LoginData;
+import model.client.LoginData;
 import model.*;
 import org.junit.jupiter.api.*;
 import server.Server;

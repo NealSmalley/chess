@@ -47,13 +47,4 @@ public class DataAccessException extends Exception{
         return new DataAccessException(message);
     }
 
-    //fromHttpStatusCode
-    public static PosExc fromHttpStatusCode(int httpStatusCode){
-        return switch (httpStatusCode) {
-            case 500 -> PosExc.ServerError;
-            case 400 -> PosExc.ClientError;
-            default -> throw new IllegalArgumentException("Unknown HTTP status code: " + httpStatusCode);
-        };
-    }
-
 }

@@ -1,8 +1,7 @@
 package ui;
 
-import com.google.gson.Gson;
 import model.AuthData;
-import model.Client.LoginData;
+import model.client.LoginData;
 import model.GameData;
 import model.GameList;
 import model.UserData;

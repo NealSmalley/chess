@@ -1,9 +1,8 @@
 package ui.server;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
-import model.Client.LoginData;
+import model.client.LoginData;
 import ui.exception.DataAccessException;
 
 import java.net.URI;
@@ -22,12 +21,6 @@ public class ServerFacade {
     public ServerFacade(String url){
         serverUrl = url;
     }
-    //generic type takes objects(gameData,etc) and strings
-    private <T> String serializerFunc(T input){
-        Gson serializer = new Gson();
-        return serializer.toJson(input);
-    }
-
 
     public GameData createGame(String gameName) throws DataAccessException {
         GameName gameNameObj = new GameName(gameName);

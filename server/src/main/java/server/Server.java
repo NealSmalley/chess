@@ -213,11 +213,6 @@ public class Server {
 
 
 
-    //helper handler for joinGame
-//    private static class JoinGameData {
-//        int gameID;
-//        String playerColor;
-//    }
 
     private void joinGame(Context ctx){
         try {

@@ -25,18 +25,6 @@ public class DataAccessException extends Exception{
         super(message);
     }
 
-//    public DataAccessException(PosExc exc, String message) {
-//        super(message);
-//        this.exc = exc;
-//    }
-//    public DataAccessException(PosExc exc, String message, Throwable ex) {
-//        super(message, ex);
-//        this.exc = exc;
-//    }
-    //getter
-//    public PosExc getExc(){
-//        return exc;
-//    }
 
     //fromJson
     public static DataAccessException fromJson(String json){

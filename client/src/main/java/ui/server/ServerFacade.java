@@ -70,14 +70,6 @@ public class ServerFacade {
         handleResponse(resServer, null);
     }
 
-//    javalin.post("/user", this::register);
-//    javalin.post("/session", this::login);
-//    javalin.delete("/session", this::logout);
-//    javalin.get("/game", this::listGame);
-//    javalin.post("/game", this::createGame);
-//    javalin.put("/game", this::joinGame);
-//    javalin.delete("/db", this::clearApplication);
-
 
     private HttpRequest buildRequest(String method, String path, Object body) {
         //newBuilder() allows for configure/modify http request before sending

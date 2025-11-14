@@ -63,16 +63,19 @@ public class ServerFacade {
         JoinGameData joinGameData = new JoinGameData(gameID, colorUpperCase);
         HttpRequest req = buildRequest("PUT", "/game", joinGameData);
         HttpResponse<String> resServer = sendRequest(req);
-        handleResponse(resServer, AuthData.class);
+        handleResponse(resServer, null);
     }
     public void logout() throws DataAccessException{
         //do I need to incorporate authTokens in the header
         HttpRequest req = buildRequest("DELETE", "/session", null);
         HttpResponse<String> resServer = sendRequest(req);
-        handleResponse(resServer, AuthData.class);
+        handleResponse(resServer, null);
     }
-
-
+    public void clearApplication() throws DataAccessException{
+        HttpRequest req = buildRequest("DELETE", "/db", null);
+        HttpResponse<String> resServer = sendRequest(req);
+        handleResponse(resServer, null);
+    }
 
 //    javalin.post("/user", this::register);
 //    javalin.post("/session", this::login);
@@ -94,8 +97,13 @@ public class ServerFacade {
         if ((body != null) && (authToken == null)) {
             builder.setHeader("Content-Type", "application/json");
         }
-        else {
+        //this was an else statement
+        else if (authToken != null){
             builder.setHeader("authorization", authToken);
+        }
+        //clear application
+        else {
+            builder.setHeader("Content-Type", "application/json");
         }
         //builds json request
         return builder.build();
@@ -115,7 +123,7 @@ public class ServerFacade {
         try {
             return client.send(request, BodyHandlers.ofString());
         } catch (Exception ex) {
-            throw new DataAccessException(DataAccessException.PosExc.ServerError, ex.getMessage());
+            throw new DataAccessException(ex.getMessage());
         }
     }
     //handlesResponses: exceptions, not successful and success
@@ -126,7 +134,7 @@ public class ServerFacade {
             if (body != null) {
                 throw DataAccessException.fromJson(body);
             }
-            throw new DataAccessException(DataAccessException.fromHttpStatusCode(status),"another failure: "+status);
+            throw new DataAccessException("another failure: "+status);
         }
         //data in the body?
         if (responseClass != null){

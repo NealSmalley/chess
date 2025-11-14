@@ -283,7 +283,7 @@ public class Server {
 
 
     //hander clear application
-    private void clearApplication(Context ctx) throws DataAccessException {
+    public void clearApplication(Context ctx) throws DataAccessException {
         try {
             userService.clear();
             gameService.clear();
@@ -304,6 +304,9 @@ public class Server {
 //            ctx.status(400).json(msg);
         }
     }
+
+
+
         public int run(int desiredPort) {
         javalin.start(desiredPort);
         return javalin.port();

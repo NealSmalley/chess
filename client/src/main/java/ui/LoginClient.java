@@ -87,7 +87,7 @@ public class LoginClient {
             userName = authdata.username();
             return String.format("You registered as %s.", userName);
         }
-        throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <yourname>");
+        throw new DataAccessException("Expected: <yourname>");
     }
     private UserData toUserData(String... params){
         String email;
@@ -118,7 +118,7 @@ public class LoginClient {
             userName = String.join("-", params);
             return String.format("Logged in as %s.", userName);
         }
-        throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <yourname>");
+        throw new DataAccessException("Expected: <yourname>");
     }
 
     public String createGame(String... params) throws DataAccessException {
@@ -130,7 +130,7 @@ public class LoginClient {
             //gameNumberMap.put(gameNumber, gameid);
             return String.format("GameName in as %s.",gameName);
         }
-        throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <gameName>");
+        throw new DataAccessException("Expected: <gameName>");
     }
     public String list() throws DataAccessException {
         if (isLoggedIn(loginStatus)) {
@@ -153,7 +153,7 @@ public class LoginClient {
             }
             return result.toString();
         }
-        throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <loggedin>");
+        throw new DataAccessException("Expected: <loggedin>");
     }
 
     public String join(String... params) throws DataAccessException{
@@ -167,7 +167,7 @@ public class LoginClient {
                 return "";
             }
         }
-        throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <join>");
+        throw new DataAccessException("Expected: <join>");
     }
     private boolean inGameList(int gamenumber){
         return (gamenumber > 0) || (gamenumber <= gameListLen);
@@ -182,7 +182,7 @@ public class LoginClient {
                 return "";
             }
         }
-        throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <join>");
+        throw new DataAccessException("Expected: <join>");
     }
     public String logout() throws DataAccessException{
         loginStatus = LoginStatus.SIGNEDOUT;

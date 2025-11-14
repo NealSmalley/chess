@@ -87,7 +87,7 @@ public class LoginClient {
             userName = authdata.username();
             return String.format("You registered as %s.", userName);
         }
-        throw new DataAccessException("Expected: <yourname>");
+        throw new DataAccessException("Expected: <yourname password and email>");
     }
     private UserData toUserData(String... params){
         String email;
@@ -118,7 +118,7 @@ public class LoginClient {
             userName = String.join("-", params);
             return String.format("Logged in as %s.", userName);
         }
-        throw new DataAccessException("Expected: <yourname>");
+        throw new DataAccessException("Expected: <yourname and password>");
     }
 
     public String createGame(String... params) throws DataAccessException {
@@ -167,7 +167,7 @@ public class LoginClient {
                 return "";
             }
         }
-        throw new DataAccessException("Expected: <join>");
+        throw new DataAccessException("Expected: <gameid and color>");
     }
     private boolean inGameList(int gamenumber){
         return (gamenumber > 0) || (gamenumber <= gameListLen);
@@ -182,7 +182,7 @@ public class LoginClient {
                 return "";
             }
         }
-        throw new DataAccessException("Expected: <join>");
+        throw new DataAccessException("Expected: <gameid>");
     }
     public String logout() throws DataAccessException{
         loginStatus = LoginStatus.SIGNEDOUT;

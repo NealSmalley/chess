@@ -2,6 +2,7 @@ package ui;
 
 import com.google.gson.Gson;
 import model.AuthData;
+import model.Client.LoginData;
 import model.GameData;
 import model.GameList;
 import model.UserData;
@@ -9,10 +10,7 @@ import ui.exception.DataAccessException;
 import ui.server.PrintBoard;
 import ui.server.ServerFacade;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 import static ui.EscapeSequences.*;
 
@@ -24,7 +22,7 @@ public class LoginClient {
     private String authToken;
     private int gameNumber;
     private int gameListLen;
-    private Map<Integer, Integer> gameNumberMap;
+    private Map<Integer, Integer> gameNumberMap = new HashMap<>();
 
     public LoginClient(String serverUrl){
         serverFacade = new ServerFacade(serverUrl);
@@ -41,7 +39,7 @@ public class LoginClient {
 
             try {
                 result = eval(line);
-                System.out.print(SET_BG_COLOR_BLUE + result);
+                System.out.print(result);
             } catch (Throwable e){
                 var msg = e.toString();
                 System.out.print(msg);
@@ -50,7 +48,7 @@ public class LoginClient {
     }
 
     private void printPrompt(){
-        System.out.print("\n" + SET_BG_COLOR_BLACK + ">>> " + SET_TEXT_COLOR_GREEN);
+        System.out.print("\n" + SET_BG_COLOR_BLACK + ">>> " + SET_TEXT_COLOR_WHITE);
     }
 
     public String eval(String input){
@@ -82,10 +80,11 @@ public class LoginClient {
     }
 
     public String register(String... params) throws DataAccessException{
-        if (params.length == 4){
+        if (params.length == 3){
             UserData userdata = toUserData(params);
             AuthData authdata = serverFacade.register(userdata);
             authToken = authdata.authToken();
+            userName = authdata.username();
             return String.format("You registered as %s.", userName);
         }
         throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <yourname>");
@@ -93,22 +92,28 @@ public class LoginClient {
     private UserData toUserData(String... params){
         String email;
         loginStatus = LoginStatus.SIGNEDIN;
-        String username = params[1];
-        String password = params[2];
-        if (params[3] != null) {
-            email = params[3];
+        String username = params[0];
+        String password = params[1];
+        if (params.length > 2) {
+            email = params[2];
         }
         else{
             email = null;
         }
         return new UserData(username, password, email);
     }
+    private LoginData toLoginData(String... params){
+        loginStatus = LoginStatus.SIGNEDIN;
+        String username = params[0];
+        String password = params[1];
+        return new LoginData(username, password);
+    }
 
     public String login(String... params) throws DataAccessException {
         if (params.length >= 1){
             loginStatus = LoginStatus.SIGNEDIN;
-            UserData userdata = toUserData(params);
-            AuthData authdata = serverFacade.login(userdata);
+            LoginData logindata = toLoginData(params);
+            AuthData authdata = serverFacade.login(logindata);
             authToken = authdata.authToken();
             userName = String.join("-", params);
             return String.format("Logged in as %s.", userName);
@@ -119,7 +124,10 @@ public class LoginClient {
     public String createGame(String... params) throws DataAccessException {
         if ((params.length == 1) && (isLoggedIn(loginStatus))){
             gameName = String.join("-", params);
-            serverFacade.createGame(gameName);
+            GameData newGame = serverFacade.createGame(gameName);
+            int gameid = newGame.gameID();
+            //gameNumber++;
+            //gameNumberMap.put(gameNumber, gameid);
             return String.format("GameName in as %s.",gameName);
         }
         throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <gameName>");
@@ -129,6 +137,7 @@ public class LoginClient {
             GameList gameList = serverFacade.listGame();
             var result = new StringBuilder();
             gameListLen = gameList.games().size();
+            gameNumber = 0;
             for (GameData game : gameList.games()){
                 gameNumber++;
                 int gameid = game.gameID();
@@ -136,7 +145,10 @@ public class LoginClient {
                 String blackUsername = game.blackUsername();
                 String gameName = game.gameName();
                 String gameNumberString = String.valueOf(gameNumber);
-                result.append(gameNumberString).append(whiteUsername).append(blackUsername).append(gameName).append("\n");
+                result.append("gameNumber: ").append(gameNumberString).append(", ");
+                result.append("whiteUsername: ").append(whiteUsername).append(", ");
+                result.append("blackUsername: ").append(blackUsername).append(", ");
+                result.append("gameName: ").append(gameName).append("\n");
                 gameNumberMap.put(gameNumber, gameid);
             }
             return result.toString();
@@ -145,10 +157,10 @@ public class LoginClient {
     }
 
     public String join(String... params) throws DataAccessException{
-        if (params.length == 3 && (isLoggedIn(loginStatus))){
-            int gamenumber = Integer.parseInt(params[1]);
+        if (params.length == 2 && (isLoggedIn(loginStatus))){
+            int gamenumber = Integer.parseInt(params[0]);
             if (inGameList(gamenumber)){
-                String color = params[2];
+                String color = params[1];
                 serverFacade.join(gamenumber, color, gameNumberMap);
                 PrintBoard board = new PrintBoard();
                 board.printBoard(color);

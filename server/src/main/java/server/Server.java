@@ -192,8 +192,6 @@ public class Server {
         try {
             Gson serializer = new Gson();
             String authToken = ctx.header("authorization");
-
-
             //Authenticate Authtoken
             userService.authenticatUser(authToken);
 

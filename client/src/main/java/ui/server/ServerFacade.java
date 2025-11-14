@@ -3,6 +3,7 @@ package ui.server;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
+import model.Client.LoginData;
 import ui.exception.DataAccessException;
 
 import java.net.URI;
@@ -15,6 +16,8 @@ import java.util.Map;
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
     private final String serverUrl;
+    private String authToken;
+
 
     public ServerFacade(String url){
         serverUrl = url;
@@ -27,8 +30,8 @@ public class ServerFacade {
 
 
     public GameData createGame(String gameName) throws DataAccessException {
-        String gameNameSerialized = serializerFunc(gameName);
-        HttpRequest req = buildRequest("POST","/game", gameNameSerialized);
+        GameName gameNameObj = new GameName(gameName);
+        HttpRequest req = buildRequest("POST","/game", gameNameObj);
         HttpResponse<String> resServer = sendRequest(req);
         return handleResponse(resServer, GameData.class);
     }
@@ -40,25 +43,25 @@ public class ServerFacade {
     }
 
     public AuthData register(UserData userdata) throws DataAccessException{
-        String userdataSerialized = serializerFunc(userdata);
-        HttpRequest req = buildRequest("POST", "/user", userdataSerialized);
+        HttpRequest req = buildRequest("POST", "/user", userdata);
         HttpResponse<String> resServer = sendRequest(req);
         AuthData authdata = handleResponse(resServer, AuthData.class);
+        authToken = authdata.authToken();
         return authdata;
     }
 
-    public AuthData login(UserData userdata) throws DataAccessException {
-        String userdataSerialized = serializerFunc(userdata);
-        HttpRequest req = buildRequest("POST", "/session", userdataSerialized);
+    public AuthData login(LoginData logindata) throws DataAccessException {
+        HttpRequest req = buildRequest("POST", "/session", logindata);
         HttpResponse<String> resServer = sendRequest(req);
         AuthData authdata = handleResponse(resServer, AuthData.class);
+        authToken = authdata.authToken();
         return authdata;
     }
     public void join(int gameNumber, String color, Map<Integer, Integer> gameNumberMap) throws DataAccessException{
         int gameID = gameNumberMap.get(gameNumber);
-        JoinGameData joinGameData = new JoinGameData(gameID, color);
-        String joinGameSerialized = serializerFunc(joinGameData);
-        HttpRequest req = buildRequest("PUT", "/game", joinGameSerialized);
+        String colorUpperCase = color.toUpperCase();
+        JoinGameData joinGameData = new JoinGameData(gameID, colorUpperCase);
+        HttpRequest req = buildRequest("PUT", "/game", joinGameData);
         HttpResponse<String> resServer = sendRequest(req);
         handleResponse(resServer, AuthData.class);
     }
@@ -88,8 +91,11 @@ public class ServerFacade {
         //chooses method (exa: POST) and then creates the request body
         builder.method(method, makeRequestBody(body));
         //sets header
-        if (body != null) {
+        if ((body != null) && (authToken == null)) {
             builder.setHeader("Content-Type", "application/json");
+        }
+        else {
+            builder.setHeader("authorization", authToken);
         }
         //builds json request
         return builder.build();

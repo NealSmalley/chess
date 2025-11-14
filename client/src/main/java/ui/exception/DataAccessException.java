@@ -15,7 +15,8 @@ public class DataAccessException extends Exception{
         Unauthorized,
         Forbidden,
         ServerError,
-        ClientError;
+        ClientError,
+        NullValue;
     }
     //Exception private var
     private final PosExc exc;

@@ -110,7 +110,7 @@ public class PrintBoard {
         rowPushStack.push(square);
 
         //side boarder
-        if (Objects.equals(square, "boarder")) {
+        if (Objects.equals(square, "boarder") && (sideBoarderCount <=16)) {
             sideBoarder(rowPopStack, rowPushStack);
         }
         //inner area row
@@ -119,16 +119,18 @@ public class PrintBoard {
         }
     }
     public void sideBoarder(Stack<String> rowPopStack,Stack<String> rowPushStack){
-        //should increment once everytime this functions is called
-        System.out.print(sideNumber);
-        sideBoarderCount++;
-        if ((sideBoarderCount % 2 == 0) && (sideNumber !=0)) {
-            sideNumber = sideNumber + sideIncrementer;
+        if((sideNumber != 0) && (sideNumber != 9)){
+            //should increment once everytime this functions is called
+            System.out.print(sideNumber);
+            sideBoarderCount++;
+            if ((sideBoarderCount % 2 == 0)) {
+                sideNumber = sideNumber + sideIncrementer;
+            }
+            row(rowPopStack, rowPushStack);
         }
-        else if(sideNumber == 0){
-            boarder();
+        else{
+            sideBoarderCount++;
         }
-        row(rowPopStack, rowPushStack);
     }
     public void rowChess(Stack<String> rowPopStack, Stack<String> rowPushStack){
         innercellCount++;

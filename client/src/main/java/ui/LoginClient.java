@@ -70,7 +70,7 @@ public class LoginClient {
                 case "create" -> createGame(params);
                 case "list" -> list();
                 case "join" -> join(params);
-                case "observe" -> observe();
+                case "observe" -> observe(params);
                 case "logout" -> logout();
                 default -> help();
             };
@@ -164,7 +164,7 @@ public class LoginClient {
                 serverFacade.join(gamenumber, color, gameNumberMap);
                 PrintBoard board = new PrintBoard();
                 board.printBoard(color);
-                return gamenumber + color;
+                return "";
             }
         }
         throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <join>");
@@ -174,10 +174,12 @@ public class LoginClient {
     }
 
     public String observe(String... params) throws DataAccessException {
-        if (params.length == 2 && (isLoggedIn(loginStatus))){
-            int gamenumber = Integer.parseInt(params[1]);
+        if (params.length == 1 && (isLoggedIn(loginStatus))){
+            int gamenumber = Integer.parseInt(params[0]);
             if (inGameList(gamenumber)) {
-                return "Valid GameNumber";
+                PrintBoard board = new PrintBoard();
+                board.printBoard("WHITE");
+                return "";
             }
         }
         throw new DataAccessException(DataAccessException.PosExc.ClientError, "Expected: <join>");

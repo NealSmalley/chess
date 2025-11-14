@@ -178,7 +178,7 @@ public class LoginClient {
             int gamenumber = Integer.parseInt(params[0]);
             if (inGameList(gamenumber)) {
                 PrintBoard board = new PrintBoard();
-                board.printBoard("WHITE");
+                board.printBoard("white");
                 return "";
             }
         }

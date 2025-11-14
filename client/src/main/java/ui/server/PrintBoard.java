@@ -19,9 +19,12 @@ public class PrintBoard {
 
     //universal vars
     private int sideBoarderCount;
+    private int pawnCount;
 
     //color based vars
     private String playerColor;
+    private String textColor;
+    private String oppositeTextColor;
     private int start;
     private int end;
     private int incrementer;
@@ -48,6 +51,8 @@ public class PrintBoard {
             letterNumber = 0;
             resetLetterNumber = 0;
             letterIncrementer = 1;
+            textColor = SET_TEXT_COLOR_BLUE;
+            oppositeTextColor = SET_TEXT_COLOR_RED;
         }
         else {
             start = TopBoarder.values().length - 1;
@@ -58,6 +63,8 @@ public class PrintBoard {
             letterNumber = 7;
             resetLetterNumber = 7;
             letterIncrementer = -1;
+            textColor = SET_TEXT_COLOR_RED;
+            oppositeTextColor = SET_TEXT_COLOR_BLUE;
         }
     }
     public void printBoard(String playerColor){
@@ -91,6 +98,8 @@ public class PrintBoard {
     }
 
     public void boarder(){
+        //Left padding
+        System.out.print(EMPTY+" ");
         //forward = white/reverse = black
         for (int i = start; i != end; i = i+incrementer){
             System.out.print(SET_TEXT_COLOR_BLACK + SET_BG_COLOR_LIGHT_GREY + EMPTY + TopBoarder.values()[i]);
@@ -115,13 +124,27 @@ public class PrintBoard {
         }
         //inner area row
         else if ((Objects.equals(square, "white")) || (Objects.equals(square, "black"))) {
-            rowChess(rowPopStack, rowPushStack);
+            String spaceColor = spaceColor(square);
+            rowChess(rowPopStack, rowPushStack, spaceColor);
         }
+    }
+    private String spaceColor(String square){
+        String spaceColor;
+        if ((Objects.equals(square, "white"))){
+            spaceColor = SET_BG_COLOR_WHITE;
+        }
+        else if ((Objects.equals(square, "black"))){
+            spaceColor = SET_BG_COLOR_BLACK;
+        }
+        else{
+            spaceColor = square;
+        }
+        return spaceColor;
     }
     public void sideBoarder(Stack<String> rowPopStack,Stack<String> rowPushStack){
         if((sideNumber != 0) && (sideNumber != 9)){
             //should increment once everytime this functions is called
-            System.out.print(sideNumber);
+            System.out.print(EMPTY + SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK+ sideNumber);
             sideBoarderCount++;
             if ((sideBoarderCount % 2 == 0)) {
                 sideNumber = sideNumber + sideIncrementer;
@@ -132,23 +155,27 @@ public class PrintBoard {
             sideBoarderCount++;
         }
     }
-    public void rowChess(Stack<String> rowPopStack, Stack<String> rowPushStack){
+    public void rowChess(Stack<String> rowPopStack, Stack<String> rowPushStack, String spaceColor){
         innercellCount++;
         //lettersOuter
         if (((innercellCount >= 1) && (innercellCount <= 8)) || ((innercellCount >= 57) && (innercellCount < 65))) {
             String letter = lettersOutside.get(letterNumber);
-            System.out.print(EMPTY + letter);
+            System.out.print(EMPTY + spaceColor + textColor + letter);
             letterNumber = letterNumber + letterIncrementer;
         }
         //lettersInner
         else if(((innercellCount >=  8) && (innercellCount <= 16))||((innercellCount >= 49) && (innercellCount <= 56))) {
-            System.out.print(EMPTY + "P");
+            pawnCount++;
+            if (pawnCount == 9){
+                textColor = oppositeTextColor;
+            }
+            System.out.print(EMPTY + spaceColor + textColor + "P");
             //resets letter number
             letterNumber = resetLetterNumber;
         }
         //blank squares
         else{
-            System.out.print(EMPTY + " ");
+            System.out.print(EMPTY + spaceColor + " ");
         }
         row(rowPopStack, rowPushStack);
     }

@@ -51,7 +51,6 @@ public class ServerFacadeTests {
 
     @Test
     void registerValid() throws Exception {
-        //serverFacade = new ServerFacade("http://localhost:8080");
         UserData userData = new UserData("player1", "password", "p1@email.com");
         AuthData authData = serverFacade.register(userData);
         assertFalse(authData.authToken().isEmpty());

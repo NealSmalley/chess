@@ -119,12 +119,12 @@ public class SQLGameDAO implements GameDAO{
             if (gamedata.whiteUsername() != null){
                 //sql whiteusername is not empty
                 if (currentWhiteUser != null && !currentWhiteUser.isEmpty()){
-                    throw new DataAccessException(DataAccessException.PosExc.Forbidden, "403: Join Steal Team Color Exception");
+                    throw new DataAccessException(DataAccessException.PosExc.Forbidden, "You tried to join a color that already had a player");
                 }
             }
             if (gamedata.blackUsername() != null){
                 if (currentBlackUser != null && !currentBlackUser.isEmpty()){
-                    throw new DataAccessException(DataAccessException.PosExc.Forbidden, "403: Join Steal Team Color Exception");
+                    throw new DataAccessException(DataAccessException.PosExc.Forbidden, "You tried to join a color that already had a player");
                 }
             }
 

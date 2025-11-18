@@ -53,6 +53,7 @@ public class PrintBoard {
             letterIncrementer = 1;
             textColor = SET_TEXT_COLOR_BLUE;
             oppositeTextColor = SET_TEXT_COLOR_RED;
+            List.of("boarder","black","white","black","white","black","white","black","white","boarder").forEach(firstRowColors::push);
         }
         else {
             start = TopBoarder.values().length - 1;
@@ -65,6 +66,7 @@ public class PrintBoard {
             letterIncrementer = -1;
             textColor = SET_TEXT_COLOR_RED;
             oppositeTextColor = SET_TEXT_COLOR_BLUE;
+            List.of("boarder","black","white","black","white","black","white","black","white","boarder").forEach(firstRowColors::push);
         }
     }
     public void printBoard(String playerColor){
@@ -72,7 +74,7 @@ public class PrintBoard {
         //fill colStack
         List.of("boarder","2nd","1st","2nd","1st","2nd","1st","2nd","1st","boarder").forEach(colStack::push);
         //boarder,white,black,white,black,white,black,white,black, boarder
-        List.of("boarder","white","black","white","black","white","black","white","black","boarder").forEach(firstRowColors::push);
+        //List.of("boarder","white","black","white","black","white","black","white","black","boarder").forEach(firstRowColors::push);
         currentColOptions();
     }
     //loops through columns

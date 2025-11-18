@@ -48,7 +48,7 @@ public class UserService {
         AuthData auth = new AuthData(generateAuthToken(),user.username());
         //User doesn't exist
         if (userDao.getUser(user.username()) == null) {
-            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "user exists already");
+            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "user doesn't exist");
         }
         //User exists
         else {

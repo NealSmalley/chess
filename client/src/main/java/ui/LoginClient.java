@@ -109,7 +109,7 @@ public class LoginClient {
     }
 
     public String login(String... params) throws DataAccessException {
-        if (params.length >= 1){
+        if (params.length == 2){
             loginStatus = LoginStatus.SIGNEDIN;
             LoginData logindata = toLoginData(params);
             AuthData authdata = serverFacade.login(logindata);
@@ -156,8 +156,14 @@ public class LoginClient {
     }
 
     public String join(String... params) throws DataAccessException{
+        int gamenumber;
         if (params.length == 2 && (isLoggedIn(loginStatus))){
-            int gamenumber = Integer.parseInt(params[0]);
+            try {
+                gamenumber = Integer.parseInt(params[0]);
+            }
+            catch (NumberFormatException e){
+                throw new DataAccessException("Expected: <use numbers not words>");
+            }
             if (inGameList(gamenumber)){
                 String color = params[1];
                 serverFacade.join(gamenumber, color, gameNumberMap);
@@ -165,23 +171,35 @@ public class LoginClient {
                 board.printBoard(color);
                 return "";
             }
+            else{
+                throw new DataAccessException("Expected: <gameNumber doesn't exist>");
+            }
         }
-        throw new DataAccessException("Expected: <gameid and color>");
+        throw new DataAccessException("Expected: <gameNumber and color>");
     }
     private boolean inGameList(int gamenumber){
-        return (gamenumber > 0) || (gamenumber <= gameListLen);
+        return (gamenumber > 0) && (gamenumber <= gameListLen);
     }
 
     public String observe(String... params) throws DataAccessException {
         if (params.length == 1 && (isLoggedIn(loginStatus))){
-            int gamenumber = Integer.parseInt(params[0]);
+            int gamenumber;
+            try {
+                gamenumber = Integer.parseInt(params[0]);
+            }
+            catch (NumberFormatException e){
+                throw new DataAccessException("Expected: <use numbers not words>");
+            }
             if (inGameList(gamenumber)) {
                 PrintBoard board = new PrintBoard();
                 board.printBoard("white");
                 return "";
             }
+            else{
+                throw new DataAccessException("Expected: <gameNumber doesn't exist>");
+            }
         }
-        throw new DataAccessException("Expected: <gameid>");
+        throw new DataAccessException("Expected: <gameNumber>");
     }
     public String logout() throws DataAccessException{
         loginStatus = LoginStatus.SIGNEDOUT;

@@ -6,6 +6,8 @@ import dataaccess.DataAccessException;
 import io.javalin.*;
 import io.javalin.http.*;
 
+import io.javalin.websocket.WsConnectContext;
+import io.javalin.websocket.WsMessageContext;
 import model.*;
 
 import service.GameService;
@@ -37,7 +39,15 @@ public class Server {
         this.userService = new UserService(userDao, authDao);
         this.gameService = new GameService(gameDao, authDao);
 
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        javalin = Javalin.create(config -> config.staticFiles.add("web"))
+                .ws("/ws", ws -> {
+                    ws.onConnect(this::connect);
+                    ws.onMessage(this::onMessage);
+                    ws.onClose(ctx -> System.out.println("Websocket closed"));
+                });
+
+
+
 
         // Register your endpoints and exception handlers here.
         //line 1
@@ -50,6 +60,17 @@ public class Server {
         javalin.delete("/db", this::clearApplication);
 
     }
+    //websocket methds
+    private void connect(WsConnectContext wsConnectContext) {
+        System.out.println("Websocket Connected");
+        wsConnectContext.enableAutomaticPings();
+    }
+    //ctx -> ctx.send("Websocket response:" + ctx.message()
+    private void onMessage(WsMessageContext wsMessageContext) {
+        wsMessageContext.send("Websocket response:" + wsMessageContext.message());
+    }
+
+
 // handler register (whole method)
     private void register(Context ctx) {
         //req = request, res = response
@@ -302,7 +323,9 @@ public class Server {
 
 
 
-        public int run(int desiredPort) {
+    public int run(int desiredPort) {
+
+
         javalin.start(desiredPort);
         return javalin.port();
     }

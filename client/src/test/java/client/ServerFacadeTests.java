@@ -4,7 +4,7 @@ import model.client.LoginData;
 import model.*;
 import org.junit.jupiter.api.*;
 import server.Server;
-import ui.exception.DataAccessException;
+import ui.exception.ClientException;
 import ui.server.ServerFacade;
 
 import java.util.HashMap;
@@ -60,7 +60,7 @@ public class ServerFacadeTests {
     void registerInvalid() throws Exception {
         UserData userData = new UserData("player1", "password", "p1@email.com");
         AuthData authData = serverFacade.register(userData);
-        assertThrows(DataAccessException.class, () -> serverFacade.register(userData));
+        assertThrows(ClientException.class, () -> serverFacade.register(userData));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class ServerFacadeTests {
 
     @Test
     void logoutInvalid() throws Exception {
-        assertThrows(DataAccessException.class, () -> serverFacade.logout());
+        assertThrows(ClientException.class, () -> serverFacade.logout());
     }
 
 
@@ -87,7 +87,7 @@ public class ServerFacadeTests {
     void loginInvalid() throws Exception {
         registerValid();
         LoginData loginData = new LoginData("player1", null);
-        assertThrows(DataAccessException.class, () -> serverFacade.login(loginData));
+        assertThrows(ClientException.class, () -> serverFacade.login(loginData));
     }
 
     @Test
@@ -102,7 +102,7 @@ public class ServerFacadeTests {
     void createGameInvalid() throws Exception {
         registerValid();
         String gameName = null;
-        assertThrows(DataAccessException.class, () -> serverFacade.createGame(gameName));
+        assertThrows(ClientException.class, () -> serverFacade.createGame(gameName));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class ServerFacadeTests {
 
     @Test
     void listGameInvalid() throws Exception {
-        assertThrows(DataAccessException.class, () -> serverFacade.listGame());
+        assertThrows(ClientException.class, () -> serverFacade.listGame());
     }
 
     @Test
@@ -134,7 +134,7 @@ public class ServerFacadeTests {
     void joinGameInvalid() throws Exception {
         listGameValid();
         serverFacade.join(1, "white", gameNumberMap);
-        assertThrows(DataAccessException.class,() -> serverFacade.join(1, "white", gameNumberMap));
+        assertThrows(ClientException.class,() -> serverFacade.join(1, "white", gameNumberMap));
     }
 
 

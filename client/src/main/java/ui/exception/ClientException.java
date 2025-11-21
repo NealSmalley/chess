@@ -7,7 +7,7 @@ import java.util.HashMap;
 /**
  * Indicates there was an error connecting to the database
  */
-public class DataAccessException extends Exception{
+public class ClientException extends Exception{
 
     //possible Exceptions
     public enum PosExc {
@@ -21,18 +21,21 @@ public class DataAccessException extends Exception{
     //Exception private var
     //private final PosExc exc;
 
-    public DataAccessException(String message) {
+    public ClientException(String message) {
         super(message);
+    }
+    public ClientException(String message, Throwable throwable) {
+        super(message,throwable);
     }
 
 
     //fromJson
-    public static DataAccessException fromJson(String json){
+    public static ClientException fromJson(String json){
         HashMap map = new Gson().fromJson(json, HashMap.class);
         //this might throw an error because I didn't label it status elsewhere?
         //var status = PosExc.valueOf(map.get("status").toString());
         String message = map.get("message").toString();
-        return new DataAccessException(message);
+        return new ClientException(message);
     }
 
 }

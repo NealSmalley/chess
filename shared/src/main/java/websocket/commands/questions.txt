@@ -1,0 +1,8 @@
+InGameClient -> user chooses thing that resembles UserGameCommand -> websocketFacade
+websocketFacade -> creates a UserGameCommand object -> Server
+Server -> handles and actually implements the functionality -> websocketFacade
+websocketFacade -> makes a notification (serverMessageType) object -> ServerMessage
+ServerMessage -> compares the serverMessageType -> Server (notifies the clients)
+
+
+cmd is the other library equivalent of session

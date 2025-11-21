@@ -3,7 +3,7 @@ package ui.server;
 import com.google.gson.Gson;
 import model.*;
 import model.client.LoginData;
-import ui.exception.DataAccessException;
+import ui.exception.ClientException;
 
 import java.net.URI;
 import java.net.http.*;
@@ -22,20 +22,20 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public GameData createGame(String gameName) throws DataAccessException {
+    public GameData createGame(String gameName) throws ClientException {
         GameName gameNameObj = new GameName(gameName);
         HttpRequest req = buildRequest("POST","/game", gameNameObj);
         HttpResponse<String> resServer = sendRequest(req);
         return handleResponse(resServer, GameData.class);
     }
 
-    public GameList listGame() throws DataAccessException{
+    public GameList listGame() throws ClientException {
         HttpRequest req = buildRequest("GET", "/game", null);
         HttpResponse<String> resServer = sendRequest(req);
         return handleResponse(resServer, GameList.class);
     }
 
-    public AuthData register(UserData userdata) throws DataAccessException{
+    public AuthData register(UserData userdata) throws ClientException {
         HttpRequest req = buildRequest("POST", "/user", userdata);
         HttpResponse<String> resServer = sendRequest(req);
         AuthData authdata = handleResponse(resServer, AuthData.class);
@@ -43,14 +43,14 @@ public class ServerFacade {
         return authdata;
     }
 
-    public AuthData login(LoginData logindata) throws DataAccessException {
+    public AuthData login(LoginData logindata) throws ClientException {
         HttpRequest req = buildRequest("POST", "/session", logindata);
         HttpResponse<String> resServer = sendRequest(req);
         AuthData authdata = handleResponse(resServer, AuthData.class);
         authToken = authdata.authToken();
         return authdata;
     }
-    public void join(int gameNumber, String color, Map<Integer, Integer> gameNumberMap) throws DataAccessException{
+    public void join(int gameNumber, String color, Map<Integer, Integer> gameNumberMap) throws ClientException {
         int gameID = gameNumberMap.get(gameNumber);
         String colorUpperCase = color.toUpperCase();
         JoinGameData joinGameData = new JoinGameData(gameID, colorUpperCase);
@@ -58,13 +58,13 @@ public class ServerFacade {
         HttpResponse<String> resServer = sendRequest(req);
         handleResponse(resServer, null);
     }
-    public void logout() throws DataAccessException{
+    public void logout() throws ClientException {
         //do I need to incorporate authTokens in the header
         HttpRequest req = buildRequest("DELETE", "/session", null);
         HttpResponse<String> resServer = sendRequest(req);
         handleResponse(resServer, null);
     }
-    public void clearApplication() throws DataAccessException{
+    public void clearApplication() throws ClientException {
         HttpRequest req = buildRequest("DELETE", "/db", null);
         HttpResponse<String> resServer = sendRequest(req);
         handleResponse(resServer, null);
@@ -102,24 +102,24 @@ public class ServerFacade {
         }
     }
 
-    private HttpResponse<String> sendRequest(HttpRequest request) throws DataAccessException {
+    private HttpResponse<String> sendRequest(HttpRequest request) throws ClientException {
         //sends req and returns server response
             //bodyHandlers.ofString converts http to java string
         try {
             return client.send(request, BodyHandlers.ofString());
         } catch (Exception ex) {
-            throw new DataAccessException(ex.getMessage());
+            throw new ClientException(ex.getMessage(), ex);
         }
     }
     //handlesResponses: exceptions, not successful and success
-    private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) throws DataAccessException {
+    private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) throws ClientException {
         int status = response.statusCode();
         if (!isSuccessful(status)) {
             var body = response.body();
             if (body != null) {
-                throw DataAccessException.fromJson(body);
+                throw ClientException.fromJson(body);
             }
-            throw new DataAccessException("another failure: "+status);
+            throw new ClientException("another failure: "+status);
         }
         //data in the body?
         if (responseClass != null){

@@ -5,9 +5,11 @@ import model.client.LoginData;
 import model.GameData;
 import model.GameList;
 import model.UserData;
-import ui.exception.DataAccessException;
+import ui.exception.ClientException;
 import ui.server.PrintBoard;
 import ui.server.ServerFacade;
+
+import websocket.commands.UserGameCommand;
 
 import java.util.*;
 
@@ -23,8 +25,11 @@ public class LoginClient {
     private int gameListLen;
     private Map<Integer, Integer> gameNumberMap = new HashMap<>();
 
-    public LoginClient(String serverUrl){
+    private final WebSocketFacade ws;
+
+    public LoginClient(String serverUrl) throws Exception{
         serverFacade = new ServerFacade(serverUrl);
+        ws = new WebSocketFacade(serverUrl, this);
     }
     public void run(){
         System.out.println("Welcome to the Chessgame! Sign in to start.");
@@ -73,12 +78,12 @@ public class LoginClient {
                 case "logout" -> logout();
                 default -> help();
             };
-            } catch (DataAccessException ex){
+            } catch (ClientException ex){
                 return ex.getMessage();
         }
     }
 
-    public String register(String... params) throws DataAccessException{
+    public String register(String... params) throws ClientException {
         if (params.length == 3){
             UserData userdata = toUserData(params);
             AuthData authdata = serverFacade.register(userdata);
@@ -86,7 +91,7 @@ public class LoginClient {
             userName = authdata.username();
             return String.format("You registered as %s.", userName);
         }
-        throw new DataAccessException("Expected: <yourname password and email>");
+        throw new ClientException("Expected: <yourname password and email>");
     }
     private UserData toUserData(String... params){
         String email;
@@ -108,7 +113,7 @@ public class LoginClient {
         return new LoginData(username, password);
     }
 
-    public String login(String... params) throws DataAccessException {
+    public String login(String... params) throws ClientException {
         if (params.length == 2){
             loginStatus = LoginStatus.SIGNEDIN;
             LoginData logindata = toLoginData(params);
@@ -117,10 +122,10 @@ public class LoginClient {
             userName = String.join("-", params);
             return String.format("Logged in as %s.", userName);
         }
-        throw new DataAccessException("Expected: <yourname and password>");
+        throw new ClientException("Expected: <yourname and password>");
     }
 
-    public String createGame(String... params) throws DataAccessException {
+    public String createGame(String... params) throws ClientException {
         if ((params.length == 1) && (isLoggedIn(loginStatus))){
             gameName = String.join("-", params);
             GameData newGame = serverFacade.createGame(gameName);
@@ -129,9 +134,9 @@ public class LoginClient {
             //gameNumberMap.put(gameNumber, gameid);
             return String.format("GameName in as %s.",gameName);
         }
-        throw new DataAccessException("Expected: <gameName>");
+        throw new ClientException("Expected: <gameName>");
     }
-    public String list() throws DataAccessException {
+    public String list() throws ClientException {
         if (isLoggedIn(loginStatus)) {
             GameList gameList = serverFacade.listGame();
             var result = new StringBuilder();
@@ -152,56 +157,60 @@ public class LoginClient {
             }
             return result.toString();
         }
-        throw new DataAccessException("Expected: <loggedin>");
+        throw new ClientException("Expected: <loggedin>");
     }
 
-    public String join(String... params) throws DataAccessException{
+    public String join(String... params) throws ClientException {
         int gamenumber;
         if (params.length == 2 && (isLoggedIn(loginStatus))){
             try {
                 gamenumber = Integer.parseInt(params[0]);
             }
             catch (NumberFormatException e){
-                throw new DataAccessException("Expected: <use numbers not words>");
+                throw new ClientException("Expected: <use numbers not words>",e);
             }
             if (inGameList(gamenumber)){
                 String color = params[1];
                 serverFacade.join(gamenumber, color, gameNumberMap);
                 PrintBoard board = new PrintBoard();
                 board.printBoard(color);
+                int gameID = gameNumberMap.get(gamenumber);
+                ws.send(UserGameCommand.CommandType.CONNECT, authToken, gameID);
                 return "";
             }
             else{
-                throw new DataAccessException("Expected: <gameNumber doesn't exist>");
+                throw new ClientException("Expected: <gameNumber doesn't exist>");
             }
         }
-        throw new DataAccessException("Expected: <gameNumber and color>");
+        throw new ClientException("Expected: <gameNumber and color>");
     }
     private boolean inGameList(int gamenumber){
         return (gamenumber > 0) && (gamenumber <= gameListLen);
     }
 
-    public String observe(String... params) throws DataAccessException {
+    public String observe(String... params) throws ClientException {
         if (params.length == 1 && (isLoggedIn(loginStatus))){
             int gamenumber;
             try {
                 gamenumber = Integer.parseInt(params[0]);
             }
             catch (NumberFormatException e){
-                throw new DataAccessException("Expected: <use numbers not words>");
+                throw new ClientException("Expected: <use numbers not words>", e);
             }
             if (inGameList(gamenumber)) {
                 PrintBoard board = new PrintBoard();
                 board.printBoard("white");
+                int gameID = gameNumberMap.get(gamenumber);
+                ws.send(UserGameCommand.CommandType.CONNECT, authToken, gameID);
                 return "";
             }
             else{
-                throw new DataAccessException("Expected: <gameNumber doesn't exist>");
+                throw new ClientException("Expected: <gameNumber doesn't exist>");
             }
         }
-        throw new DataAccessException("Expected: <gameNumber>");
+        throw new ClientException("Expected: <gameNumber>");
     }
-    public String logout() throws DataAccessException{
+    public String logout() throws ClientException {
         loginStatus = LoginStatus.SIGNEDOUT;
         serverFacade.logout();
         return "logout success";

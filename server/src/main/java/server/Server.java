@@ -16,6 +16,9 @@ import service.UserService;
 import java.util.Collection;
 import java.util.HashMap;
 
+import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
+
 public class Server {
 
     private final Javalin javalin;
@@ -67,7 +70,19 @@ public class Server {
     }
     //ctx -> ctx.send("Websocket response:" + ctx.message()
     private void onMessage(WsMessageContext wsMessageContext) {
-        wsMessageContext.send("Websocket response:" + wsMessageContext.message());
+        //deserializes the wsMessageContext.message()
+        UserGameCommand userGameCommandObj = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
+        //get the UserGameCommand
+        UserGameCommand.CommandType userGameCommand = userGameCommandObj.getCommandType();
+        //sort based on userGameCommand
+        if (userGameCommand == UserGameCommand.CommandType.CONNECT){
+            ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
+            String serverSent = new Gson().toJson(serverMessage);
+            wsMessageContext.send(serverSent);
+        }
+        //send a serialized server message
+        //wsMessageContext.send("Server side: Websocket response:" + wsMessageContext.message());
+        //wsMessageContext.send("LOAD_GAME");
     }
 
 

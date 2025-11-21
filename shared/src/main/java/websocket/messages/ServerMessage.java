@@ -10,6 +10,7 @@ import java.util.Objects;
  */
 public class ServerMessage {
     ServerMessageType serverMessageType;
+    String game;
 
     public enum ServerMessageType {
         LOAD_GAME,

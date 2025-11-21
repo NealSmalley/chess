@@ -9,7 +9,9 @@ import jakarta.websocket.Session;
 import jakarta.websocket.WebSocketContainer;
 import ui.exception.ClientException;
 
+import ui.server.PrintBoard;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.net.URI;
@@ -32,9 +34,17 @@ public class WebSocketFacade extends Endpoint{
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    //change this  to serialization and sending of notify(notification)
-                    System.out.println(message);
-                    System.out.println("\nEnter another message you want to echo:");
+                    //deserialize server message
+                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                    ServerMessage.ServerMessageType messageType = serverMessage.getServerMessageType();
+                    //receives the message back from the server
+                    if (messageType.equals(ServerMessage.ServerMessageType.LOAD_GAME)){
+                        System.out.println("Load_Game");
+                        PrintBoard board = new PrintBoard();
+                        board.printBoard("white");
+                    }
+                    //System.out.println("client side:"+message);
+//                    System.out.println("\n client side: Enter another message you want to echo:");
                 }
             });
         }
@@ -43,9 +53,9 @@ public class WebSocketFacade extends Endpoint{
         }
     }
 
-    public void send(UserGameCommand.CommandType connect, String authToken, int gameID) throws ClientException {
+    public void send(UserGameCommand.CommandType CONNECT, String authToken, int gameID) throws ClientException {
         try {
-            UserGameCommand userGameCommand = new UserGameCommand(connect,authToken, gameID);
+            UserGameCommand userGameCommand = new UserGameCommand(CONNECT,authToken, gameID);
             session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
         }
         catch(IOException e){

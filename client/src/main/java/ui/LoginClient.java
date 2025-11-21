@@ -198,8 +198,8 @@ public class LoginClient {
                 throw new ClientException("Expected: <use numbers not words>", e);
             }
             if (inGameList(gamenumber)) {
-                PrintBoard board = new PrintBoard();
-                board.printBoard("white");
+//                PrintBoard board = new PrintBoard();
+//                board.printBoard("white");
                 int gameID = gameNumberMap.get(gamenumber);
                 ws.send(UserGameCommand.CommandType.CONNECT, authToken, gameID);
                 return "";

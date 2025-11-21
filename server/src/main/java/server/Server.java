@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.*;
 import dataaccess.DataAccessException;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
+import websocket.messages.ServerMessageLoadGame;
 
 public class Server {
 
@@ -76,7 +78,9 @@ public class Server {
         UserGameCommand.CommandType userGameCommand = userGameCommandObj.getCommandType();
         //sort based on userGameCommand
         if (userGameCommand == UserGameCommand.CommandType.CONNECT){
-            ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
+            //replace this with the real chess game eventually
+            ChessGame game = new ChessGame();
+            ServerMessageLoadGame serverMessage = new ServerMessageLoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
             String serverSent = new Gson().toJson(serverMessage);
             wsMessageContext.send(serverSent);
         }

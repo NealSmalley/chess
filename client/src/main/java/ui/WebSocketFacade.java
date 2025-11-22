@@ -12,6 +12,7 @@ import ui.exception.ClientException;
 import ui.server.PrintBoard;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
+import websocket.messages.ServerMessageNotification;
 
 import java.io.IOException;
 import java.net.URI;
@@ -42,6 +43,11 @@ public class WebSocketFacade extends Endpoint{
                         System.out.println("Load_Game");
                         PrintBoard board = new PrintBoard();
                         board.printBoard("white");
+                    }
+                    else if (messageType.equals(ServerMessage.ServerMessageType.NOTIFICATION)){
+                        ServerMessageNotification notificationMessage = new Gson().fromJson(message, ServerMessageNotification.class);
+                        String messageReceived = notificationMessage.getMessage();
+                        System.out.println("Notification: "+ messageReceived);
                     }
                     //System.out.println("client side:"+message);
 //                    System.out.println("\n client side: Enter another message you want to echo:");

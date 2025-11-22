@@ -16,10 +16,14 @@ import service.UserService;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
+import websocket.messages.ServerMessageError;
 import websocket.messages.ServerMessageLoadGame;
+import websocket.messages.ServerMessageNotification;
 
 public class Server {
 
@@ -29,6 +33,9 @@ public class Server {
     private final UserService userService;
     private final GameService gameService;
     private final AuthDAO authDao;
+
+    //list of players
+    private List<WsMessageContext> playerList = new ArrayList<>();
 
     public Server() {
         try {
@@ -71,7 +78,8 @@ public class Server {
         wsConnectContext.enableAutomaticPings();
     }
     //ctx -> ctx.send("Websocket response:" + ctx.message()
-    private void onMessage(WsMessageContext wsMessageContext) {
+    private void onMessage(WsMessageContext wsMessageContext) throws Exception {
+        removingClosedPlayers();
         //deserializes the wsMessageContext.message()
         UserGameCommand userGameCommandObj = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
         //get the UserGameCommand
@@ -79,15 +87,60 @@ public class Server {
         //sort based on userGameCommand
         if (userGameCommand == UserGameCommand.CommandType.CONNECT){
             //replace this with the real chess game eventually
-            ChessGame game = new ChessGame();
-            ServerMessageLoadGame serverMessage = new ServerMessageLoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
-            String serverSent = new Gson().toJson(serverMessage);
-            wsMessageContext.send(serverSent);
+            //int gameID, String playerColor, String username
+            try {
+                GameData gameData = gameService.updategame(userGameCommandObj.getGameID(), "", null);
+                String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
+                ChessGame game = gameData.game();
+                ServerMessageLoadGame serverMessage = new ServerMessageLoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                String serverSent = new Gson().toJson(serverMessage);
+                wsMessageContext.send(serverSent);
+                if (!playerList.isEmpty()) {
+                    //replace this with a way to get username
+                    String message = "join otherPlayer color";
+                    everyoneExceptCurPlayer(wsMessageContext, message);
+
+                }
+                playerList.add(wsMessageContext);
+            }
+            catch(Exception e){
+                System.out.println(e.getMessage());
+                String errorMessage = e.getMessage();
+                ServerMessageError serverMessageError = new ServerMessageError(ServerMessage.ServerMessageType.ERROR, errorMessage);
+                String serverSent = new Gson().toJson(serverMessageError);
+                wsMessageContext.send(serverSent);
+            }
         }
         //send a serialized server message
         //wsMessageContext.send("Server side: Websocket response:" + wsMessageContext.message());
         //wsMessageContext.send("LOAD_GAME");
     }
+    private void everyoneExceptCurPlayer(WsMessageContext wsMessageContext, String message){
+        for (WsMessageContext player : playerList){
+            if (!player.equals(wsMessageContext)){
+                notification(player, message);
+            }
+        }
+    }
+
+    private void removingClosedPlayers() {
+        List<WsMessageContext> removalPlayerList = new ArrayList<>();
+        for (WsMessageContext player : playerList) {
+            if (!player.session.isOpen()) {
+                removalPlayerList.add(player);
+            }
+        }
+        for (WsMessageContext player : removalPlayerList){
+            playerList.remove(player);
+        }
+    }
+
+    private void notification(WsMessageContext wsMessageContext, String message){
+        ServerMessageNotification serverMessage = new ServerMessageNotification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        String serverSent = new Gson().toJson(serverMessage);
+        wsMessageContext.send(serverSent);
+    }
+
 
 
 // handler register (whole method)

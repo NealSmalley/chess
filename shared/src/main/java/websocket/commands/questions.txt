@@ -8,4 +8,3 @@ ServerMessage -> compares the serverMessageType -> Server (notifies the clients)
 cmd is the other library equivalent of session
 
 
-ask about game as the name for load game. What does that mean?

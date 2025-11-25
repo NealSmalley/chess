@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessMove;
 import com.google.gson.Gson;
 import jakarta.websocket.ContainerProvider;
 import jakarta.websocket.Endpoint;
@@ -49,8 +50,6 @@ public class WebSocketFacade extends Endpoint{
                         String messageReceived = notificationMessage.getMessage();
                         System.out.println("Notification: "+ messageReceived);
                     }
-                    //System.out.println("client side:"+message);
-//                    System.out.println("\n client side: Enter another message you want to echo:");
                 }
             });
         }

@@ -96,7 +96,7 @@ public class SQLGameDAO implements GameDAO{
         GameData newGameData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
         return newGameData;
     }
-    public GameData updategame(GameData gamedata) throws Exception{
+    public GameData joingame(GameData gamedata) throws Exception{
         try (var conn = DatabaseManager.getConnection()) {
             //already taken
             String taken = "SELECT whiteUsername, blackUsername FROM game WHERE gameID = ?";
@@ -146,8 +146,8 @@ public class SQLGameDAO implements GameDAO{
             }
 
             //sql versions of gameName and game
-            String gameName = getGameInfo(conn,gamedata,"gameName");
-            String gameJson = getGameInfo(conn,gamedata,"game");
+            String gameName = getGameInfo(conn, gamedata,"gameName");
+            String gameJson = getGameInfo(conn, gamedata,"game");
 
 
             //Update
@@ -167,23 +167,110 @@ public class SQLGameDAO implements GameDAO{
         }
         return gamedata;
     }
+    public GameData updategame(GameData gamedata) throws Exception{
+        try (var conn = DatabaseManager.getConnection()) {
+            String gameJson = getGameInfo(conn, gamedata,"game");
+            //Update
+            String sql = "UPDATE game SET game = ? WHERE gameID = ?";
+            try (var statement = conn.prepareStatement(sql)) {
+                statement.setString(1, new Gson().toJson(gamedata.game()));
+                statement.setInt(2, gamedata.gameID());
+                int updatedRows = statement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
+        }
+        return gamedata;
+    }
+    public GameData updategameplayers(GameData gamedata, String username) throws Exception{
+        String whiteUsername = gamedata.whiteUsername();
+        String blackUsername = gamedata.blackUsername();
+        try (var conn = DatabaseManager.getConnection()) {
+            //String gameJson = getGameInfo(conn, gamedata,"game");
+            if (gamedata.whiteUsername().equals(username)){
+                whiteUsername = "";
+            }
+            else if (gamedata.blackUsername().equals(username)){
+                blackUsername = "";
+            }
+
+            //Update
+            String sql = "UPDATE game SET whiteUsername = ?, blackUsername = ? WHERE gameID = ?";
+            try (var statement = conn.prepareStatement(sql)) {
+                statement.setString(1, whiteUsername);
+                statement.setString(2, blackUsername);
+                statement.setInt(3, gamedata.gameID());
+                int updatedRows = statement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
+        }
+        return gamedata;
+    }
+    public GameData updategameresigned(GameData gamedata) throws Exception{
+
+        try (var conn = DatabaseManager.getConnection()) {
+            //Update
+            ChessGame chessGame = gamedata.game();
+            String sql = "UPDATE game SET game = ? WHERE gameID = ?";
+            try (var statement = conn.prepareStatement(sql)) {
+                statement.setString(1, new Gson().toJson(chessGame));
+                statement.setInt(2, gamedata.gameID());
+                int updatedRows = statement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            throw new DataAccessException(DataAccessException.PosExc.ServerError, "500: getUser method serverError");
+        }
+        return gamedata;
+    }
+
+
     public String getGameInfo(Connection conn, GameData gamedata, String columnLabel) throws DataAccessException, SQLException{
         String gameInfo;
         //String gameJson;
         String assigning = "SELECT gameName, game FROM game WHERE gameID = ?";
-        try (PreparedStatement currentStatement = conn.prepareStatement(assigning)){
-            currentStatement.setInt(1, gamedata.gameID());
-            try (ResultSet rs = currentStatement.executeQuery()){
-                if (rs.next()){
-                    gameInfo = rs.getString(columnLabel);
-                    //gameName = rs.getString("gameName");
-                    //gameJson = rs.getString("game");
-                } else{
-                    throw new DataAccessException(DataAccessException.PosExc.BadRequest, "gameName or game doesn't exist");
+            try (PreparedStatement currentStatement = conn.prepareStatement(assigning)) {
+                currentStatement.setInt(1, gamedata.gameID());
+                try (ResultSet rs = currentStatement.executeQuery()) {
+                    if (rs.next()) {
+                        gameInfo = rs.getString(columnLabel);
+                        //gameName = rs.getString("gameName");
+                        //gameJson = rs.getString("game");
+                    } else {
+                        throw new DataAccessException(DataAccessException.PosExc.BadRequest, "gameName or game doesn't exist");
+                    }
+                }
+            }
+        return gameInfo;
+    }
+    public GameData getgame(int gameID) throws Exception{
+        String whiteUsername;
+        String blackUsername;
+        String gameName;
+        ChessGame game;
+        //String gameJson;
+        String getting = "SELECT whiteUsername, blackUsername, gameName, game FROM game WHERE gameID = ?";
+        String gameJson;
+        try (var conn = DatabaseManager.getConnection()) {
+            try (PreparedStatement currentStatement = conn.prepareStatement(getting)) {
+                currentStatement.setInt(1, gameID);
+                try (ResultSet rs = currentStatement.executeQuery()) {
+                    if (rs.next()) {
+                        whiteUsername = rs.getString("whiteUsername");
+                        blackUsername = rs.getString("blackUsername");
+                        gameName = rs.getString("gameName");
+                        game = new Gson().fromJson(rs.getString("game"),ChessGame.class);
+                    } else {
+                        throw new DataAccessException(DataAccessException.PosExc.BadRequest, "white, black, gameName or game doesn't exist");
+                    }
                 }
             }
         }
-        return gameInfo;
+        GameData returnGame = new GameData(gameID, whiteUsername, blackUsername, gameName, game);
+        return returnGame;
     }
 
 

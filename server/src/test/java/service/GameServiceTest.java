@@ -72,7 +72,7 @@ public class GameServiceTest {
         int gameID = 1;
         String playerColor = "BLACK";
         String username = "joe";
-        GameData updatedGame = gameService.updategame(gameID, playerColor, username);
+        GameData updatedGame = gameService.joingame(gameID, playerColor, username);
 
         assertNotNull(updatedGame);
         //Assertions.assertThrows(UnauthorizedException.class, ()->gameService.updategame(gameID, playerColor, username));
@@ -96,11 +96,11 @@ public class GameServiceTest {
         int gameID = 1;
         String playerColor = "BLACK";
         String username = "Tester";
-        GameData updatedGame = gameService.updategame(gameID, playerColor, username);
+        GameData updatedGame = gameService.joingame(gameID, playerColor, username);
 
         //What tests need to be done?
         //assertNotNull(updatedGame);
-        Assertions.assertThrows(Exception.class, ()->gameService.updategame(gameID, playerColor, username));
+        Assertions.assertThrows(Exception.class, ()->gameService.joingame(gameID, playerColor, username));
         //assertTrue(!authData.authToken().isEmpty());
     }
 

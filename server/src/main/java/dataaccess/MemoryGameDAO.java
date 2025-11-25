@@ -25,7 +25,7 @@ public class MemoryGameDAO implements GameDAO{
     }
 
 
-    public GameData updategame(GameData gamedata) throws Exception{
+    public GameData joingame(GameData gamedata) throws Exception{
         //int gameID, String playerColor, String username
         int gameID = gamedata.gameID();
         String blackUsername = gamedata.blackUsername();
@@ -60,6 +60,19 @@ public class MemoryGameDAO implements GameDAO{
         GameData updategamedata = new GameData(gameID, currentwhiteUsername, currentblackUsername, currentGameName, currentgame);
         games.put(gameID, updategamedata);
         return updategamedata;
+    }
+    public GameData updategame(GameData gamedata) throws Exception{
+        return gamedata;
+    }
+    public GameData updategameplayers(GameData gamedata, String username) throws Exception{
+        return new GameData(null, null, null, null,null);
+    }
+    public GameData getgame(int gameID) throws Exception{
+        GameData currentGame = games.get(gameID);
+        return currentGame;
+    }
+    public GameData updategameresigned(GameData gameData) throws Exception{
+        return gameData;
     }
 
     public HashMap<Integer, GameData> listgames() {

@@ -14,11 +14,20 @@ import java.util.Objects;
 public class ChessGame {
     private TeamColor turn;
     private ChessBoard board;
+    private boolean hasResigned = false;
 
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
         turn = TeamColor.WHITE;
+    }
+
+    public boolean getHasResigned(){
+        return hasResigned;
+    }
+
+    public void setHasResigned(boolean hasResigned){
+        this.hasResigned = hasResigned;
     }
 
 

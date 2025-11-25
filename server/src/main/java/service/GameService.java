@@ -35,7 +35,7 @@ public class GameService {
         return gameData;
     }
 
-    public GameData updategame(int gameID, String playerColor, String username) throws Exception{
+    public GameData joingame(int gameID, String playerColor, String username) throws Exception{
         String blackUsername = null;
         String whiteUsername = null;
 
@@ -48,9 +48,17 @@ public class GameService {
         ChessGame game = new ChessGame();
         GameData gameDataUpdate = new GameData(gameID, whiteUsername, blackUsername, "", game);
 
-        GameData updatedGame = gameDao.updategame(gameDataUpdate);
-        return updatedGame;
+        GameData joinGame = gameDao.joingame(gameDataUpdate);
+        return joinGame;
     }
+
+    public GameData getgame(int gameID) throws Exception{
+        GameData getGame = gameDao.getgame(gameID);
+        return getGame;
+    }
+
+
+
     public HashMap<Integer, GameData> listgames() throws dataaccess.DataAccessException {
         HashMap<Integer, GameData> games =  gameDao.listgames();
         return games;

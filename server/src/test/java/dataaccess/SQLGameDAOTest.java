@@ -113,7 +113,7 @@ public class SQLGameDAOTest {
         gameDao.creategame(starterGameData);
 
         GameData updateGameData = new GameData(8, "whiteUsername2", "blackUsername2", "gameName", starterChessGame);
-        Assertions.assertDoesNotThrow(()->gameDao.updategame(updateGameData));
+        Assertions.assertDoesNotThrow(()->gameDao.joingame(updateGameData));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class SQLGameDAOTest {
         gameDao.clear();
         ChessGame starterChessGame = new ChessGame();
         GameData starterGameData = new GameData(8, "", "", "gameName", starterChessGame);
-        assertThrows(DataAccessException.class, ()-> gameDao.updategame(starterGameData));
+        assertThrows(DataAccessException.class, ()-> gameDao.joingame(starterGameData));
     }
 
     @Test

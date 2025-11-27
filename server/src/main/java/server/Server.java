@@ -16,10 +16,7 @@ import model.*;
 import service.GameService;
 import service.UserService;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
@@ -36,9 +33,10 @@ public class Server {
     private final UserService userService;
     private final GameService gameService;
     private final AuthDAO authDao;
-
+    //map of games and players
+    private Map<Integer, List<WsMessageContext>> gameMap = new HashMap<>();
     //list of players
-    private List<WsMessageContext> playerList = new ArrayList<>();
+    //private List<WsMessageContext> playerList = new ArrayList<>();
 
 
     public Server() {
@@ -92,19 +90,36 @@ public class Server {
         //sort based on userGameCommand
         if (userGameCommand == UserGameCommand.CommandType.CONNECT){
             try {
-                GameData gameData = gameService.joingame(userGameCommandObj.getGameID(), "", null);
+                int gameID = userGameCommandObj.getGameID();
+                GameData gameData = gameService.getgame(gameID);
                 ChessGame game = gameData.game();
                 String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
                 ServerMessageLoadGame serverMessage = new ServerMessageLoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
                 String serverSent = new Gson().toJson(serverMessage);
                 wsMessageContext.send(serverSent);
-                if (!playerList.isEmpty()) {
-                    //replace this with a way to get username
-                    String message = "join "+username+" color";
-                    everyoneExceptCurPlayer(wsMessageContext, message);
 
+                //game exists and has other players
+                if (gameMap.get(gameID) != null) {
+                    String message = "join "+username+" color";
+                    everyoneExceptCurPlayer(gameID, wsMessageContext, message);
                 }
-                playerList.add(wsMessageContext);
+                //game doesn't exist yet
+                else if (gameMap.get(gameID) == null){
+                    gameMap.put(gameID, new ArrayList<>());
+                }
+                gameMap.get(gameID).add(wsMessageContext);
+//                //game has other players
+//                if (!playerList.isEmpty()) {
+//                    String message = "join "+username+" color";
+//                    everyoneExceptCurPlayer(gameID, wsMessageContext, message);
+//
+//                }
+                //create gameid as key and list of players as values
+                //playerList.add(wsMessageContext);
+
+                //create gameid as key and list of players as values
+                //playerList.add(wsMessageContext);
+
             }
             catch(Exception e){
                 System.out.println(e.getMessage());
@@ -115,7 +130,8 @@ public class Server {
             }
         }
         else if ((userGameCommand == UserGameCommand.CommandType.MAKE_MOVE)){
-            GameData gameData = gameService.getgame(userGameCommandObj.getGameID());
+            int gameID = userGameCommandObj.getGameID();
+            GameData gameData = gameService.getgame(gameID);
             ChessGame game = gameData.game();
             try {
                 boolean hasResigned = game.getHasResigned();
@@ -128,9 +144,10 @@ public class Server {
 
                 game.makeMove(makeMove);
                 GameData gameDataUpdated = gameDao.updategame(gameData);
-                everyonePlayerLoadGame(game);
+                List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
+                everyonePlayerLoadGame(listGamePlayers, game);
                 String message = username+" make a move";
-                everyoneExceptCurPlayer(wsMessageContext, message);
+                everyoneExceptCurPlayer(gameID, wsMessageContext, message);
             }
             catch (InvalidMoveException | DataAccessException e){
                 System.out.println(e.getMessage());
@@ -139,6 +156,7 @@ public class Server {
         }
 
         else if (userGameCommand == UserGameCommand.CommandType.RESIGN){
+            int gameID = userGameCommandObj.getGameID();
             GameData gameData = gameService.getgame(userGameCommandObj.getGameID());
             ChessGame game = gameData.game();
             String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
@@ -150,7 +168,8 @@ public class Server {
                     throw new InvalidMoveException("Can't resign twice");
                 }
                 String message = "resign" + username;
-                everyonePlayerNotification(wsMessageContext, message);
+                List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
+                everyonePlayerNotification(listGamePlayers,wsMessageContext, message);
                 game.setHasResigned(true);
                 GameData gameDataUpdated = gameDao.updategameresigned(gameData);
             }
@@ -160,13 +179,15 @@ public class Server {
             }
         }
         else if (userGameCommand == UserGameCommand.CommandType.LEAVE){
-            GameData gameData = gameService.getgame(userGameCommandObj.getGameID());
+            int gameID = userGameCommandObj.getGameID();
+            GameData gameData = gameService.getgame(gameID);
             ChessGame game = gameData.game();
             String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
             try {
                 String message = "leave " + username;
-                everyoneExceptCurPlayer(wsMessageContext, message);
-                removingAfterLeave(wsMessageContext);
+                List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
+                everyoneExceptCurPlayer(gameID, wsMessageContext, message);
+                removingAfterLeave(listGamePlayers, wsMessageContext);
                 GameData gameDataUpdated = gameDao.updategameplayers(gameData, username);
             }
             catch (InvalidMoveException | DataAccessException e){
@@ -205,44 +226,51 @@ public class Server {
         wsMessageContext.send(serverSent);
     }
 
-    private void everyoneExceptCurPlayer(WsMessageContext wsMessageContext, String message){
-        for (WsMessageContext player : playerList){
+    private void everyoneExceptCurPlayer(Integer gameID, WsMessageContext wsMessageContext, String message){
+        List<WsMessageContext> gamePlayerList = gameMap.get(gameID);
+        for (WsMessageContext player : gamePlayerList){
+            //if in game map
             if (!player.equals(wsMessageContext)){
                 notification(player, message);
             }
         }
     }
-    private void everyonePlayerLoadGame(ChessGame game){
-        for (WsMessageContext player : playerList){
+    private void everyonePlayerLoadGame(List<WsMessageContext> listGamePlayers, ChessGame game){
+        for (WsMessageContext player : listGamePlayers){
                 loadGameSender(player, game);
         }
     }
-    private void everyonePlayerNotification(WsMessageContext wsMessageContext, String message){
-        for (WsMessageContext player : playerList){
+    private void everyonePlayerNotification(List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext, String message){
+        for (WsMessageContext player : listGamePlayers){
             notification(player, message);
         }
     }
 
     private void removingClosedPlayers() {
-        List<WsMessageContext> removalPlayerList = new ArrayList<>();
-        for (WsMessageContext player : playerList) {
-            if (!player.session.isOpen()) {
-                removalPlayerList.add(player);
+        for (int gameID : gameMap.keySet()) {
+            if (gameMap.get(gameID) != null) {
+                List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
+                List<WsMessageContext> removalPlayerList = new ArrayList<>();
+                for (WsMessageContext player : listGamePlayers) {
+                    if (!player.session.isOpen()) {
+                        removalPlayerList.add(player);
+                    }
+                }
+                for (WsMessageContext player : removalPlayerList) {
+                    listGamePlayers.remove(player);
+                }
             }
         }
-        for (WsMessageContext player : removalPlayerList){
-            playerList.remove(player);
-        }
     }
-    private void removingAfterLeave(WsMessageContext wsMessageContext){
+    private void removingAfterLeave(List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext){
         List<WsMessageContext> removalPlayerList = new ArrayList<>();
-        for (WsMessageContext player : playerList) {
+        for (WsMessageContext player : listGamePlayers) {
             if (player.equals(wsMessageContext)){
                 removalPlayerList.add(player);
             }
         }
         for (WsMessageContext player : removalPlayerList){
-            playerList.remove(player);
+            listGamePlayers.remove(player);
         }
     }
 

@@ -172,8 +172,8 @@ public class LoginClient {
             if (inGameList(gamenumber)){
                 String color = params[1];
                 serverFacade.join(gamenumber, color, gameNumberMap);
-                PrintBoard board = new PrintBoard();
-                board.printBoard(color);
+//                PrintBoard board = new PrintBoard();
+//                board.printBoard(color);
                 int gameID = gameNumberMap.get(gamenumber);
                 ws.send(UserGameCommand.CommandType.CONNECT, authToken, gameID);
                 return "";

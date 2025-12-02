@@ -6,7 +6,6 @@ import model.GameData;
 import model.GameList;
 import model.UserData;
 import ui.exception.ClientException;
-import ui.server.PrintBoard;
 import ui.server.ServerFacade;
 
 import websocket.commands.UserGameCommand;
@@ -18,12 +17,14 @@ import static ui.EscapeSequences.*;
 public class LoginClient {
     private final ServerFacade serverFacade;
     private LoginStatus loginStatus = LoginStatus.SIGNEDOUT;
+    private JoinStatus joinStatus = JoinStatus.NOTJOINED;
     private String userName = null;
     private String gameName = null;
     private String authToken;
     private int gameNumber;
     private int gameListLen;
     private Map<Integer, Integer> gameNumberMap = new HashMap<>();
+    public static String color;
 
     private final WebSocketFacade ws;
 
@@ -159,7 +160,6 @@ public class LoginClient {
         }
         throw new ClientException("Expected: <loggedin>");
     }
-
     public String join(String... params) throws ClientException {
         int gamenumber;
         if (params.length == 2 && (isLoggedIn(loginStatus))){
@@ -171,7 +171,9 @@ public class LoginClient {
             }
             if (inGameList(gamenumber)){
                 String color = params[1];
+                this.color = color;
                 serverFacade.join(gamenumber, color, gameNumberMap);
+                joinStatus = JoinStatus.JOINED;
 //                PrintBoard board = new PrintBoard();
 //                board.printBoard(color);
                 int gameID = gameNumberMap.get(gamenumber);
@@ -187,7 +189,6 @@ public class LoginClient {
     private boolean inGameList(int gamenumber){
         return (gamenumber > 0) && (gamenumber <= gameListLen);
     }
-
     public String observe(String... params) throws ClientException {
         if (params.length == 1 && (isLoggedIn(loginStatus))){
             int gamenumber;
@@ -215,18 +216,35 @@ public class LoginClient {
         serverFacade.logout();
         return "logout success";
     }
-
-
     private boolean isLoggedIn(LoginStatus loginStatus){
         if (loginStatus == LoginStatus.SIGNEDIN){
             return true;
         }
         return false;
     }
-
-
     public String help() {
-        if (loginStatus == LoginStatus.SIGNEDOUT) {
+        if ((loginStatus == LoginStatus.SIGNEDIN) && (joinStatus == JoinStatus.NOTJOINED)) {
+            return """
+                    create <NAME> - a game
+                    list - games
+                    join <ID> [WHITE|BLACK] - a game
+                    observe <ID> - a game
+                    logout - when you are done
+                    quit - playing chess
+                    help - with possible commands
+                    """;
+        }
+        else if ((loginStatus == LoginStatus.SIGNEDIN) && (joinStatus == JoinStatus.JOINED)) {
+            return """
+                    redraw - Redraws the chess board upon the user's request
+                    leave - Removes the user from the game
+                    make move - allows the user to input what move they want to make
+                    resign - The user forfeits the game and the game is over
+                    highlight legal moves - The selected piece's current square and all squares it can legally move to are highlighted
+                    help - Displays text information the user what actions they can take
+                    """;
+        }
+        else {
             return """
                     register <USERNAME> <PASSWORD> <EMAIL> - to create an account
                     login <USERNAME> <PASSWORD> - to play chess
@@ -234,15 +252,12 @@ public class LoginClient {
                     help - with possible commands
                     """;
         }
-        return """
-                create <NAME> - a game
-                list - games
-                join <ID> [WHITE|BLACK] - a game
-                observe <ID> - a game
-                logout - when you are done
-                quit - playing chess
-                help - with possible commands
-                """;
 
     }
+
+
+//    public String redraw() throws ClientException{
+//        PrintBoard board = new PrintBoard();
+//        board.printBoard(color);
+//    }
 }

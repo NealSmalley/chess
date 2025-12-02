@@ -1,5 +1,10 @@
 package ui.server;
 
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
@@ -20,6 +25,7 @@ public class PrintBoard {
     //universal vars
     private int sideBoarderCount;
     private int pawnCount;
+    private ChessGame game;
 
     //color based vars
     private String playerColor;
@@ -69,7 +75,14 @@ public class PrintBoard {
             List.of("boarder","black","white","black","white","black","white","black","white","boarder").forEach(firstRowColors::push);
         }
     }
-    public void printBoard(String playerColor){
+    public void printBoard(ChessGame game, String color){
+        this.game = game;
+        if (color.equals("white")) {
+            playerColor = "white";
+        }
+        else{
+            playerColor = "black";
+        }
         playerColorVars(playerColor);
         //fill colStack
         List.of("boarder","2nd","1st","2nd","1st","2nd","1st","2nd","1st","boarder").forEach(colStack::push);
@@ -158,27 +171,59 @@ public class PrintBoard {
         }
     }
     public void rowChess(Stack<String> rowPopStack, Stack<String> rowPushStack, String spaceColor){
+        ChessBoard board = game.getBoard();
+        int row = (innercellCount / 8)+1;
+        int col = (innercellCount % 8)+1;
         innercellCount++;
-        //lettersOuter
-        if (((innercellCount >= 1) && (innercellCount <= 8)) || ((innercellCount >= 57) && (innercellCount < 65))) {
-            String letter = lettersOutside.get(letterNumber);
-            System.out.print(EMPTY + spaceColor + textColor + letter);
-            letterNumber = letterNumber + letterIncrementer;
+        if (col == 0){
+            col++;
         }
-        //lettersInner
-        else if(((innercellCount >=  8) && (innercellCount <= 16))||((innercellCount >= 49) && (innercellCount <= 56))) {
-            pawnCount++;
-            if (pawnCount == 9){
-                textColor = oppositeTextColor;
-            }
-            System.out.print(EMPTY + spaceColor + textColor + "P");
-            //resets letter number
-            letterNumber = resetLetterNumber;
-        }
-        //blank squares
-        else{
+        ChessPiece piece = board.getPiece(new ChessPosition(row,col));
+        //empty spaces
+        if (piece == null){
             System.out.print(EMPTY + spaceColor + " ");
         }
+        else {
+            ChessPiece.PieceType pieceType = piece.getPieceType();
+            ChessGame.TeamColor pieceColor = piece.getTeamColor();
+            if ((pieceColor == ChessGame.TeamColor.WHITE)){
+                textColor = textColor;
+            }
+            else {
+                textColor = oppositeTextColor;
+            }
+            String letter = switch (pieceType){
+                case ChessPiece.PieceType.KING -> "K";
+                case ChessPiece.PieceType.QUEEN -> "Q";
+                case ChessPiece.PieceType.BISHOP -> "B";
+                case ChessPiece.PieceType.KNIGHT -> "N";
+                case ChessPiece.PieceType.ROOK -> "R";
+                case ChessPiece.PieceType.PAWN -> "P";
+            };
+
+            System.out.print(EMPTY + spaceColor + textColor + letter);
+        }
+        //}
+//        //lettersOuter
+//        if (((innercellCount >= 1) && (innercellCount <= 8)) || ((innercellCount >= 57) && (innercellCount < 65))) {
+//            String letter = lettersOutside.get(letterNumber);
+//            System.out.print(EMPTY + spaceColor + textColor + letter);
+//            letterNumber = letterNumber + letterIncrementer;
+//        }
+//        //lettersInner
+//        else if(((innercellCount >=  8) && (innercellCount <= 16))||((innercellCount >= 49) && (innercellCount <= 56))) {
+//            pawnCount++;
+//            if (pawnCount == 9){
+//                textColor = oppositeTextColor;
+//            }
+//            System.out.print(EMPTY + spaceColor + textColor + "P");
+//            //resets letter number
+//            letterNumber = resetLetterNumber;
+//        }
+//        //blank squares
+//        else{
+//            System.out.print(EMPTY + spaceColor + " ");
+//        }
         row(rowPopStack, rowPushStack);
     }
 }

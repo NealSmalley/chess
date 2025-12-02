@@ -6,6 +6,7 @@ import model.GameData;
 import model.GameList;
 import model.UserData;
 import ui.exception.ClientException;
+import ui.server.PrintBoard;
 import ui.server.ServerFacade;
 
 import websocket.commands.UserGameCommand;
@@ -25,6 +26,7 @@ public class LoginClient {
     private int gameListLen;
     private Map<Integer, Integer> gameNumberMap = new HashMap<>();
     public static String color;
+    public Integer gameID;
 
     private final WebSocketFacade ws;
 
@@ -56,32 +58,59 @@ public class LoginClient {
         System.out.print("\n" + SET_BG_COLOR_BLACK + ">>> " + SET_TEXT_COLOR_WHITE);
     }
 
-    public String eval(String input){
+    public String eval(String input) {
         try {
             String[] tokens = input.toLowerCase().split(" ");
             String cmd;
-            if (tokens.length > 0){
+            if (tokens.length > 0) {
                 cmd = tokens[0];
-            }
-            else {
+            } else {
                 cmd = "help";
             }
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
-            //what should be done about the badtype switch expressions
-            return switch (cmd){
-                case "register" -> register(params);
-                case "login" -> login(params);
-                case "quit" -> "quit";
-                case "create" -> createGame(params);
-                case "list" -> list();
-                case "join" -> join(params);
-                case "observe" -> observe(params);
-                case "logout" -> logout();
-                default -> help();
-            };
-            } catch (ClientException ex){
-                return ex.getMessage();
+            if (loginStatus == LoginStatus.SIGNEDOUT) {
+                return signedOutCommands(cmd,params);
+            }
+            else if (loginStatus == LoginStatus.SIGNEDIN && joinStatus == JoinStatus.NOTJOINED){
+                return signedInCommands(cmd, params);
+            }
+            else if (loginStatus == LoginStatus.SIGNEDIN && joinStatus == JoinStatus.JOINED){
+                return joinedCommands(cmd, params);
+            }
+            return help();
+
+        }catch (ClientException ex){
+            return ex.getMessage();
         }
+    }
+    public String signedOutCommands(String cmd, String[] params) throws ClientException{
+        return switch (cmd){
+            case "register" -> register(params);
+            case "login" -> login(params);
+            case "quit" -> "quit";
+            default -> help();
+        };
+    }
+    public String signedInCommands(String cmd, String[] params) throws ClientException{
+        return switch (cmd){
+            case "create" -> createGame(params);
+            case "list" -> list();
+            case "join" -> join(params);
+            case "observe" -> observe(params);
+            case "logout" -> logout();
+            case "quit" -> "quit";
+            default -> help();
+        };
+    }
+    public String joinedCommands(String cmd, String[] params) throws ClientException{
+        return switch (cmd){
+            case "redraw" -> redraw();
+//            case "leave" -> leave();
+//            case "make move" -> makeMove();
+//            case "resign" -> resign();
+//            case "highlight legal moves" -> legalMoves();
+            default -> help();
+        };
     }
 
     public String register(String... params) throws ClientException {
@@ -174,9 +203,8 @@ public class LoginClient {
                 this.color = color;
                 serverFacade.join(gamenumber, color, gameNumberMap);
                 joinStatus = JoinStatus.JOINED;
-//                PrintBoard board = new PrintBoard();
-//                board.printBoard(color);
                 int gameID = gameNumberMap.get(gamenumber);
+                this.gameID = gameID;
                 ws.send(UserGameCommand.CommandType.CONNECT, authToken, gameID);
                 return "";
             }
@@ -202,6 +230,7 @@ public class LoginClient {
 //                PrintBoard board = new PrintBoard();
 //                board.printBoard("white");
                 int gameID = gameNumberMap.get(gamenumber);
+                this.gameID = gameID;
                 ws.send(UserGameCommand.CommandType.CONNECT, authToken, gameID);
                 return "";
             }
@@ -256,8 +285,15 @@ public class LoginClient {
     }
 
 
-//    public String redraw() throws ClientException{
-//        PrintBoard board = new PrintBoard();
-//        board.printBoard(color);
-//    }
+    public String redraw() throws ClientException{
+        //ws.send(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+        GameList gameList = serverFacade.listGame();
+        for (GameData game : gameList.games()){
+            if (Objects.equals(gameID, game.gameID())){
+                PrintBoard board = new PrintBoard();
+                board.printBoard(game.game(),color);
+            }
+        }
+        return "";
+    }
 }

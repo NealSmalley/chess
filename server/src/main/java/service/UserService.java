@@ -72,7 +72,7 @@ public class UserService {
             throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authToken in null");
         }
         else if (!(authTokenDB.equals(authTokenUser))){
-            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authTokens don't match");
+            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authTokens don't match for logout");
         }
         //remove authToken
         authDao.removeAuth(authTokenUser);
@@ -81,7 +81,7 @@ public class UserService {
     public void authenticatUser(String authTokenUser) throws DataAccessException {
         String authTokenDB = authDao.getAuth(authTokenUser);
         if (authTokenDB == null){
-            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authTokens don't match");
+            throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authToken null");
         }
         if (!(authTokenDB.equals(authTokenUser))){
             throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "authTokens don't match");

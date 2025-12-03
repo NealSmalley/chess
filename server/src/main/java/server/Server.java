@@ -2,6 +2,7 @@ package server;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
@@ -140,13 +141,17 @@ public class Server {
                 MakeMoveCommand makeMoveCommand = new Gson().fromJson(wsMessageContext.message(), MakeMoveCommand.class);
                 ChessMove makeMove = makeMoveCommand.getMakeMove();
                 String move = makeMove.toString();
+                ChessPosition startPosition = makeMove.getStartPosition();
+                ChessPosition endPosition = makeMove.getEndPosition();
+                String startPoint = toChessNotation(startPosition);
+                String endPoint = toChessNotation(endPosition);
                 invalidMoveOpp(username, gameData, game);
 
                 game.makeMove(makeMove);
                 GameData gameDataUpdated = gameDao.updategame(gameData);
                 List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
                 everyonePlayerLoadGame(listGamePlayers, game);
-                String message = username+" make a move";
+                String message = username+" moved from " + startPoint + " to " + endPoint;
                 everyoneExceptCurPlayer(gameID, wsMessageContext, message);
             }
             catch (InvalidMoveException | DataAccessException e){
@@ -201,6 +206,24 @@ public class Server {
         //wsMessageContext.send("Server side: Websocket response:" + wsMessageContext.message());
         //wsMessageContext.send("LOAD_GAME");
     }
+
+    private String toChessNotation(ChessPosition coordinates){
+        int row = coordinates.getRow();
+        int col = coordinates.getColumn();
+        String column = switch(col){
+            case 1 -> "a";
+            case 2 -> "b";
+            case 3 -> "c";
+            case 4 -> "d";
+            case 5 -> "e";
+            case 6 -> "f";
+            case 7 -> "g";
+            case 8 -> "h";
+            default -> Integer.toString(col);
+        };
+        return row+column;
+    }
+
     private void hasResigned(boolean hasResigned) throws InvalidMoveException{
         if (hasResigned){
             throw new InvalidMoveException("You can't move after you resigned from the game");
@@ -447,8 +470,6 @@ public class Server {
         }
 
     }
-
-
 
 
     private void joinGame(Context ctx){

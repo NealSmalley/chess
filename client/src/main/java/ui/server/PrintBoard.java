@@ -57,8 +57,8 @@ public class PrintBoard {
             letterNumber = 0;
             resetLetterNumber = 0;
             letterIncrementer = 1;
-            textColor = SET_TEXT_COLOR_BLUE;
-            oppositeTextColor = SET_TEXT_COLOR_RED;
+            textColor = SET_TEXT_COLOR_RED;
+            oppositeTextColor = SET_TEXT_COLOR_BLUE;
             List.of("boarder","black","white","black","white","black","white","black","white","boarder").forEach(firstRowColors::push);
         }
         else {
@@ -76,8 +76,10 @@ public class PrintBoard {
         }
     }
     public void printBoardHighlight(ChessGame game,String color, Collection<ChessMove> validMoves){
+        System.out.println("printBoardHighlight is running");
         this.validMoves = validMoves;
         highlight = true;
+        printBoard(game, color);
     }
     public void printBoard(ChessGame game, String color){
         this.game = game;
@@ -181,14 +183,27 @@ public class PrintBoard {
     }
     public void rowChess(Stack<String> rowPopStack, Stack<String> rowPushStack, String spaceColor){
         ChessBoard board = game.getBoard();
-        int row = (innercellCount / 8)+1;
-        int col = (innercellCount % 8)+1;
-        innercellCount++;
-        if (col == 0){
-            col++;
+        int row;
+        int col;
+        //if white start 64 decrement
+        if (playerColor.equals("white")){
+            row = 8-(innercellCount / 8);
+            //col = 8-(innercellCount % 8);
+            col = (innercellCount % 8) + 1;
         }
+        //if black start 1 increment
+        else {
+            row = (innercellCount / 8) + 1;
+            //col = (innercellCount % 8) + 1;
+            col = 8-(innercellCount % 8);
+        }
+        innercellCount++;
+//        if (col == 0){
+//            col++;
+//        }
         ChessPiece piece = board.getPiece(new ChessPosition(row,col));
         //empty spaces
+        String printTextColor;
         if (piece == null){
             System.out.print(EMPTY + spaceColor + " ");
         }
@@ -196,10 +211,10 @@ public class PrintBoard {
             ChessPiece.PieceType pieceType = piece.getPieceType();
             ChessGame.TeamColor pieceColor = piece.getTeamColor();
             if ((pieceColor == ChessGame.TeamColor.WHITE)){
-                textColor = textColor;
+                printTextColor = textColor;
             }
             else {
-                textColor = oppositeTextColor;
+                printTextColor = oppositeTextColor;
             }
             String letter = switch (pieceType){
                 case ChessPiece.PieceType.KING -> "K";
@@ -210,45 +225,49 @@ public class PrintBoard {
                 case ChessPiece.PieceType.PAWN -> "P";
             };
 
-            System.out.print(EMPTY + spaceColor + textColor + letter);
+            System.out.print(EMPTY + spaceColor + printTextColor + letter);
         }
-        //}
-//        //lettersOuter
-//        if (((innercellCount >= 1) && (innercellCount <= 8)) || ((innercellCount >= 57) && (innercellCount < 65))) {
-//            String letter = lettersOutside.get(letterNumber);
-//            System.out.print(EMPTY + spaceColor + textColor + letter);
-//            letterNumber = letterNumber + letterIncrementer;
-//        }
-//        //lettersInner
-//        else if(((innercellCount >=  8) && (innercellCount <= 16))||((innercellCount >= 49) && (innercellCount <= 56))) {
-//            pawnCount++;
-//            if (pawnCount == 9){
-//                textColor = oppositeTextColor;
-//            }
-//            System.out.print(EMPTY + spaceColor + textColor + "P");
-//            //resets letter number
-//            letterNumber = resetLetterNumber;
-//        }
-//        //blank squares
-//        else{
-//            System.out.print(EMPTY + spaceColor + " ");
-//        }
         row(rowPopStack, rowPushStack);
     }
     public void rowChessHighlight(Stack<String> rowPopStack, Stack<String> rowPushStack, String spaceColor, Collection<ChessMove> validMoves){
         ChessBoard board = game.getBoard();
-        int row = (innercellCount / 8)+1;
-        int col = (innercellCount % 8)+1;
+        int row;
+        int col;
+        //if white start 64 decrement
+        if (playerColor.equals("white")){
+            row = 8-(innercellCount / 8);
+            //col = 8-(innercellCount % 8);
+            col = (innercellCount % 8) + 1;
+        }
+        //if black start 1 increment
+        else {
+            row = (innercellCount / 8) + 1;
+            //col = (innercellCount % 8) + 1;
+            col = 8-(innercellCount % 8);
+        }
         innercellCount++;
         if (col == 0){
             col++;
         }
         for (ChessMove move : validMoves) {
+            ChessPosition startPosition = move.getStartPosition();
             ChessPosition endPosition = move.getEndPosition();
+            int endRow = endPosition.getRow();
+            int endCol = endPosition.getColumn();
+            int startRow = startPosition.getRow();
+            int startCol = startPosition.getColumn();
+            if ((startRow == row) && (startCol == col)){
+                spaceColor = SET_BG_COLOR_YELLOW;
+            }
+
+            if ((endRow == row) && (endCol == col)){
+                spaceColor = SET_BG_COLOR_GREEN;
+            }
 
         }
         ChessPiece piece = board.getPiece(new ChessPosition(row,col));
         //empty spaces
+        String printTextColor;
         if (piece == null){
             System.out.print(EMPTY + spaceColor + " ");
         }
@@ -256,10 +275,10 @@ public class PrintBoard {
             ChessPiece.PieceType pieceType = piece.getPieceType();
             ChessGame.TeamColor pieceColor = piece.getTeamColor();
             if ((pieceColor == ChessGame.TeamColor.WHITE)){
-                textColor = textColor;
+                printTextColor = textColor;
             }
             else {
-                textColor = oppositeTextColor;
+                printTextColor = oppositeTextColor;
             }
             String letter = switch (pieceType){
                 case ChessPiece.PieceType.KING -> "K";
@@ -270,29 +289,8 @@ public class PrintBoard {
                 case ChessPiece.PieceType.PAWN -> "P";
             };
 
-            System.out.print(EMPTY + spaceColor + textColor + letter);
+            System.out.print(EMPTY + spaceColor + printTextColor + letter);
         }
-        //}
-//        //lettersOuter
-//        if (((innercellCount >= 1) && (innercellCount <= 8)) || ((innercellCount >= 57) && (innercellCount < 65))) {
-//            String letter = lettersOutside.get(letterNumber);
-//            System.out.print(EMPTY + spaceColor + textColor + letter);
-//            letterNumber = letterNumber + letterIncrementer;
-//        }
-//        //lettersInner
-//        else if(((innercellCount >=  8) && (innercellCount <= 16))||((innercellCount >= 49) && (innercellCount <= 56))) {
-//            pawnCount++;
-//            if (pawnCount == 9){
-//                textColor = oppositeTextColor;
-//            }
-//            System.out.print(EMPTY + spaceColor + textColor + "P");
-//            //resets letter number
-//            letterNumber = resetLetterNumber;
-//        }
-//        //blank squares
-//        else{
-//            System.out.print(EMPTY + spaceColor + " ");
-//        }
         row(rowPopStack, rowPushStack);
     }
 }

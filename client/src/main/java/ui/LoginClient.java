@@ -1,5 +1,9 @@
 package ui;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import model.AuthData;
 import model.client.LoginData;
 import model.GameData;
@@ -105,10 +109,10 @@ public class LoginClient {
     public String joinedCommands(String cmd, String[] params) throws ClientException{
         return switch (cmd){
             case "redraw" -> redraw();
-//            case "leave" -> leave();
-//            case "make move" -> makeMove();
+            case "leave" -> leave();
+            case "makemove" -> makeMove(params);
 //            case "resign" -> resign();
-//            case "highlight legal moves" -> legalMoves();
+            case "highlight" -> legalMoves(params);
             default -> help();
         };
     }
@@ -117,6 +121,7 @@ public class LoginClient {
         if (params.length == 3){
             UserData userdata = toUserData(params);
             AuthData authdata = serverFacade.register(userdata);
+            loginStatus = LoginStatus.SIGNEDIN;
             authToken = authdata.authToken();
             userName = authdata.username();
             return String.format("You registered as %s.", userName);
@@ -125,7 +130,6 @@ public class LoginClient {
     }
     private UserData toUserData(String... params){
         String email;
-        loginStatus = LoginStatus.SIGNEDIN;
         String username = params[0];
         String password = params[1];
         if (params.length > 2) {
@@ -267,9 +271,9 @@ public class LoginClient {
             return """
                     redraw - Redraws the chess board upon the user's request
                     leave - Removes the user from the game
-                    make move - allows the user to input what move they want to make
+                    makemove - allows the user to input what move they want to make
                     resign - The user forfeits the game and the game is over
-                    highlight legal moves - The selected piece's current square and all squares it can legally move to are highlighted
+                    highlight <StartPosition> - The selected piece's current square and all squares it can legally move to are highlighted
                     help - Displays text information the user what actions they can take
                     """;
         }
@@ -306,9 +310,92 @@ public class LoginClient {
         return "";
     }
 
-//    public String leave() throws ClientException{
-//        GameData game = currentGame();
-//    }
+    public String leave() throws ClientException{
+        GameData game = currentGame();
+        Integer gameID = game.gameID();
+        ws.sendLeave(UserGameCommand.CommandType.LEAVE, authToken, gameID, color);
+        joinStatus = JoinStatus.NOTJOINED;
+        return "";
+    }
+
+    public int charToInt(char charInput){
+        int result;
+        switch(charInput){
+            case 'a' -> {
+                result = 1;
+            }
+            case 'b' -> {
+                result = 2;
+            }
+            case 'c' -> {
+                result = 3;
+            }
+            case 'd' -> {
+                result = 4;
+            }
+            case 'e' -> {
+                result = 5;
+            }
+            case 'f' -> {
+                result = 6;
+            }
+            case 'g' -> {
+                result = 7;
+            }
+            case 'h' -> {
+                result = 8;
+            }
+            default -> {
+                result = Character.getNumericValue(charInput);
+            }
+        }
+        return result;
+    }
+
+    public String makeMove(String... params) throws ClientException{
+        // 2a -> 3a
+        if (params.length == 2) {
+            int startRow = Integer.parseInt(params[0].substring(0,1));
+            char startColChar = params[0].charAt(1);
+            int startCol = charToInt(startColChar);
+
+            int endRow = Integer.parseInt(params[1].substring(0,1));
+            char endColChar = (params[1].charAt(1));
+            int endCol = charToInt(endColChar);
+
+            ChessPosition startPosition = new ChessPosition(startRow, startCol);
+            ChessPosition endPosition = new ChessPosition(endRow, endCol);
+            GameData game = currentGame();
+            ChessGame chessGame = game.game();
+            //Do I need to add something for the promotionPiece parameter???
+            ChessMove move = new ChessMove(startPosition, endPosition, null);
+            try {
+                chessGame.makeMove(new ChessMove(startPosition, endPosition, null));
+            }
+            catch (InvalidMoveException e){
+                throw new ClientException("Invalid Move");
+            }
+            ws.sendMakeMove(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID,move);
+        }
+        return "";
+    }
+
+    public String legalMoves(String... params) throws ClientException {
+        System.out.println("legalMoves runs()");
+        GameData game = currentGame();
+        ChessGame chessGame = game.game();
+        if (params.length == 1) {
+            System.out.println("if statement is running");
+            int startRow = Integer.parseInt(params[0].substring(0,1));
+            char startColChar = params[0].charAt(1);
+            int startCol = charToInt(startColChar);
+            ChessPosition startPosition = new ChessPosition(startRow, startCol);
+            Collection<ChessMove> validMoves = chessGame.validMoves(startPosition);
+            PrintBoard board = new PrintBoard();
+            board.printBoardHighlight(chessGame, color, validMoves);
+        }
+        return "";
+    }
 
 
 }

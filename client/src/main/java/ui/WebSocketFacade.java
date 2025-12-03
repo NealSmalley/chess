@@ -12,6 +12,8 @@ import jakarta.websocket.WebSocketContainer;
 import ui.exception.ClientException;
 
 import ui.server.PrintBoard;
+import websocket.commands.LeaveCommand;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 import websocket.messages.ServerMessageLoadGame;
@@ -72,6 +74,26 @@ public class WebSocketFacade extends Endpoint{
             throw new ClientException("IOException issue in send()", e);
         }
     }
+    public void sendLeave(UserGameCommand.CommandType LEAVE, String authToken, int gameID, String color) throws ClientException {
+        try {
+            UserGameCommand userGameCommand = new LeaveCommand(LEAVE,authToken, gameID, color);
+            session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
+        }
+        catch(IOException e){
+            throw new ClientException("IOException issue in send()", e);
+        }
+    }
+    public void sendMakeMove(UserGameCommand.CommandType MAKE_MOVE, String authToken, int gameID,ChessMove makeMove) throws ClientException {
+        try {
+            UserGameCommand userGameCommand = new MakeMoveCommand(MAKE_MOVE,authToken, gameID, makeMove);
+            session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
+        }
+        catch(IOException e){
+            throw new ClientException("IOException issue in send()", e);
+        }
+    }
+
+
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig){
     }

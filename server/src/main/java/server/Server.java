@@ -99,9 +99,24 @@ public class Server {
                 String serverSent = new Gson().toJson(serverMessage);
                 wsMessageContext.send(serverSent);
 
+                String joinColor;
+                String role;
+                if (gameData.whiteUsername().equals(username)){
+                    joinColor = "white";
+                    role = " joined as ";
+                }
+                else if (gameData.blackUsername().equals(username)){
+                    joinColor = "black";
+                    role = " joined as ";
+                }
+                else {
+                    joinColor = "";
+                    role = " joined as observer";
+                }
+
                 //game exists and has other players
                 if (gameMap.get(gameID) != null) {
-                    String message = "join "+username+" color";
+                    String message = username+role+joinColor;
                     everyoneExceptCurPlayer(gameID, wsMessageContext, message);
                 }
                 //game doesn't exist yet
@@ -172,7 +187,7 @@ public class Server {
                 if (game.getHasResigned()) {
                     throw new InvalidMoveException("Can't resign twice");
                 }
-                String message = "resign" + username;
+                String message = "resign " + username;
                 List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
                 everyonePlayerNotification(listGamePlayers,wsMessageContext, message);
                 game.setHasResigned(true);

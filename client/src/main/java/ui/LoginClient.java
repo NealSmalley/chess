@@ -111,7 +111,7 @@ public class LoginClient {
             case "redraw" -> redraw();
             case "leave" -> leave();
             case "makemove" -> makeMove(params);
-//            case "resign" -> resign();
+            case "resign" -> resign();
             case "highlight" -> legalMoves(params);
             default -> help();
         };
@@ -367,6 +367,10 @@ public class LoginClient {
             ChessPosition endPosition = new ChessPosition(endRow, endCol);
             GameData game = currentGame();
             ChessGame chessGame = game.game();
+            boolean hasResigned = chessGame.getHasResigned();
+            if (hasResigned){
+                throw new ClientException("Can't make move player has already resigned");
+            }
             //Do I need to add something for the promotionPiece parameter???
             ChessMove move = new ChessMove(startPosition, endPosition, null);
             try {
@@ -393,6 +397,19 @@ public class LoginClient {
             Collection<ChessMove> validMoves = chessGame.validMoves(startPosition);
             PrintBoard board = new PrintBoard();
             board.printBoardHighlight(chessGame, color, validMoves);
+        }
+        return "";
+    }
+    public String resign() throws ClientException {
+        System.out.println("Are you sure you want to resign?(y/n): ");
+        Scanner scanner = new Scanner(System.in);
+        String line = scanner.nextLine();
+        String response = line.toLowerCase();
+        if (response.equals("y")){
+            GameData game = currentGame();
+            Integer gameID = game.gameID();
+            ChessGame chessGame = game.game();
+            ws.send(UserGameCommand.CommandType.RESIGN, authToken, gameID);
         }
         return "";
     }

@@ -1,0 +1,16 @@
+Questions:
+1. Does the command have to be redraw chess board or can it be shortened to redraw?
+2. Same as question 1 for highlight legal moves.
+3. Do I need to make unit tests for this phase?
+9. Check should notify all players? Yes
+10. CheckMate should notify all players? Yes
+
+Notifications:
+1. join notification should say the players color and name (done)
+2. observe notification should include observer name (done)
+   - Something is wrong with my observe where it won't print the game
+   - it also notifies other players as join instead of observed
+3. check notification (player's name)
+4. checkmate notification (player's name)
+
+5. do server tests again to see if they work

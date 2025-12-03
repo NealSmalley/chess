@@ -283,6 +283,15 @@ public class LoginClient {
         }
 
     }
+    public GameData currentGame() throws ClientException{
+        GameList gameList = serverFacade.listGame();
+        for (GameData game : gameList.games()){
+            if (Objects.equals(gameID, game.gameID())){
+                return game;
+            }
+        }
+        throw new ClientException("Game ID: "+ gameID+" wasn't found");
+    }
 
 
     public String redraw() throws ClientException{
@@ -296,4 +305,10 @@ public class LoginClient {
         }
         return "";
     }
+
+//    public String leave() throws ClientException{
+//        GameData game = currentGame();
+//    }
+
+
 }

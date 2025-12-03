@@ -1,10 +1,8 @@
 package ui.server;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
@@ -26,6 +24,8 @@ public class PrintBoard {
     private int sideBoarderCount;
     private int pawnCount;
     private ChessGame game;
+    private boolean highlight = false;
+    private Collection<ChessMove> validMoves;
 
     //color based vars
     private String playerColor;
@@ -74,6 +74,10 @@ public class PrintBoard {
             oppositeTextColor = SET_TEXT_COLOR_BLUE;
             List.of("boarder","black","white","black","white","black","white","black","white","boarder").forEach(firstRowColors::push);
         }
+    }
+    public void printBoardHighlight(ChessGame game,String color, Collection<ChessMove> validMoves){
+        this.validMoves = validMoves;
+        highlight = true;
     }
     public void printBoard(ChessGame game, String color){
         this.game = game;
@@ -140,7 +144,12 @@ public class PrintBoard {
         //inner area row
         else if ((Objects.equals(square, "white")) || (Objects.equals(square, "black"))) {
             String spaceColor = spaceColor(square);
-            rowChess(rowPopStack, rowPushStack, spaceColor);
+            if (highlight == false) {
+                rowChess(rowPopStack, rowPushStack, spaceColor);
+            }
+            else if (highlight == true) {
+                rowChessHighlight(rowPopStack, rowPushStack, spaceColor, validMoves);
+            }
         }
     }
     private String spaceColor(String square){
@@ -177,6 +186,66 @@ public class PrintBoard {
         innercellCount++;
         if (col == 0){
             col++;
+        }
+        ChessPiece piece = board.getPiece(new ChessPosition(row,col));
+        //empty spaces
+        if (piece == null){
+            System.out.print(EMPTY + spaceColor + " ");
+        }
+        else {
+            ChessPiece.PieceType pieceType = piece.getPieceType();
+            ChessGame.TeamColor pieceColor = piece.getTeamColor();
+            if ((pieceColor == ChessGame.TeamColor.WHITE)){
+                textColor = textColor;
+            }
+            else {
+                textColor = oppositeTextColor;
+            }
+            String letter = switch (pieceType){
+                case ChessPiece.PieceType.KING -> "K";
+                case ChessPiece.PieceType.QUEEN -> "Q";
+                case ChessPiece.PieceType.BISHOP -> "B";
+                case ChessPiece.PieceType.KNIGHT -> "N";
+                case ChessPiece.PieceType.ROOK -> "R";
+                case ChessPiece.PieceType.PAWN -> "P";
+            };
+
+            System.out.print(EMPTY + spaceColor + textColor + letter);
+        }
+        //}
+//        //lettersOuter
+//        if (((innercellCount >= 1) && (innercellCount <= 8)) || ((innercellCount >= 57) && (innercellCount < 65))) {
+//            String letter = lettersOutside.get(letterNumber);
+//            System.out.print(EMPTY + spaceColor + textColor + letter);
+//            letterNumber = letterNumber + letterIncrementer;
+//        }
+//        //lettersInner
+//        else if(((innercellCount >=  8) && (innercellCount <= 16))||((innercellCount >= 49) && (innercellCount <= 56))) {
+//            pawnCount++;
+//            if (pawnCount == 9){
+//                textColor = oppositeTextColor;
+//            }
+//            System.out.print(EMPTY + spaceColor + textColor + "P");
+//            //resets letter number
+//            letterNumber = resetLetterNumber;
+//        }
+//        //blank squares
+//        else{
+//            System.out.print(EMPTY + spaceColor + " ");
+//        }
+        row(rowPopStack, rowPushStack);
+    }
+    public void rowChessHighlight(Stack<String> rowPopStack, Stack<String> rowPushStack, String spaceColor, Collection<ChessMove> validMoves){
+        ChessBoard board = game.getBoard();
+        int row = (innercellCount / 8)+1;
+        int col = (innercellCount % 8)+1;
+        innercellCount++;
+        if (col == 0){
+            col++;
+        }
+        for (ChessMove move : validMoves) {
+            ChessPosition endPosition = move.getEndPosition();
+
         }
         ChessPiece piece = board.getPiece(new ChessPosition(row,col));
         //empty spaces

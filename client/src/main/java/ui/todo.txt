@@ -8,7 +8,7 @@ Questions:
 Notifications:
 1. join notification should say the players color and name (done)
 2. observe notification should include observer name (done)
-   - Something is wrong with my observe where it won't print the game
+   - Something is wrong with my observe where it won't print the game (done)
    - it also notifies other players as join instead of observed
 3. check notification (player's name)
 4. checkmate notification (player's name)

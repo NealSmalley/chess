@@ -49,8 +49,13 @@ public class WebSocketFacade extends Endpoint{
                         ServerMessageLoadGame loadGameMessage = new Gson().fromJson(message, ServerMessageLoadGame.class);
                         ChessGame game = loadGameMessage.game();
                         PrintBoard board = new PrintBoard();
-                        board.printBoard(game,LoginClient.color);
-                        //"white"
+                        if (LoginClient.color != null) {
+                            board.printBoard(game, LoginClient.color);
+                        }
+                        //observer white view
+                        else if (LoginClient.color == null){
+                            board.printBoard(game,"white");
+                        }
                     }
                     else if (messageType.equals(ServerMessage.ServerMessageType.NOTIFICATION)){
                         ServerMessageNotification notificationMessage = new Gson().fromJson(message, ServerMessageNotification.class);

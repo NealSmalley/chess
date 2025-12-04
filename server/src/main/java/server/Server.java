@@ -538,11 +538,7 @@ public class Server {
             gameMap.get(gameID).add(wsMessageContext);
         }
         catch(Exception e){
-            System.out.println(e.getMessage());
-            String errorMessage = e.getMessage();
-            ServerMessageError serverMessageError = new ServerMessageError(ServerMessage.ServerMessageType.ERROR, errorMessage);
-            String serverSent = new Gson().toJson(serverMessageError);
-            wsMessageContext.send(serverSent);
+            errorMessageSender(e, wsMessageContext);
         }
     }
     private void makeMethod(UserGameCommand userGameCommandObj, WsMessageContext wsMessageContext) throws Exception {

@@ -182,21 +182,11 @@ public class PrintBoard {
         ChessBoard board = game.getBoard();
         ChessPiece piece = board.getPiece(new ChessPosition(row,col));
         //empty spaces
-        String printTextColor;
         if (piece == null){
             System.out.print(EMPTY + spaceColor + " ");
         }
         else {
-            ChessPiece.PieceType pieceType = piece.getPieceType();
-            ChessGame.TeamColor pieceColor = piece.getTeamColor();
-            if ((pieceColor == ChessGame.TeamColor.WHITE)){
-                printTextColor = textColor;
-            }
-            else {
-                printTextColor = oppositeTextColor;
-            }
-            String letter = pieceToLetter(pieceType);
-            System.out.print(EMPTY + spaceColor + printTextColor + letter);
+            sharedOccupiedSpace(piece, spaceColor);
         }
         row(rowPopStack, rowPushStack);
     }
@@ -224,27 +214,29 @@ public class PrintBoard {
         }
 
         //empty spaces
-        String printTextColor;
         if (piece == null){
             System.out.print(EMPTY + spaceColor + " ");
         }
         else {
-            ChessPiece.PieceType pieceType = piece.getPieceType();
-            ChessGame.TeamColor pieceColor = piece.getTeamColor();
-            if ((pieceColor == ChessGame.TeamColor.WHITE)){
-                printTextColor = textColor;
-            }
-            else {
-                printTextColor = oppositeTextColor;
-            }
-
-            String letter = pieceToLetter(pieceType);
-
-            System.out.print(EMPTY + spaceColor + printTextColor + letter);
+            sharedOccupiedSpace(piece, spaceColor);
         }
         row(rowPopStack, rowPushStack);
     }
+    private void sharedOccupiedSpace(ChessPiece piece, String spaceColor){
+        String printTextColor;
+        ChessPiece.PieceType pieceType = piece.getPieceType();
+        ChessGame.TeamColor pieceColor = piece.getTeamColor();
+        if ((pieceColor == ChessGame.TeamColor.WHITE)){
+            printTextColor = textColor;
+        }
+        else {
+            printTextColor = oppositeTextColor;
+        }
 
+        String letter = pieceToLetter(pieceType);
+
+        System.out.print(EMPTY + spaceColor + printTextColor + letter);
+    }
     private List<Integer> sharedRowChess(){
         List<Integer> coordinateList = new ArrayList<>();
 

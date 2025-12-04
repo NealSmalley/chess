@@ -75,30 +75,30 @@ public class WebSocketFacade extends Endpoint{
         }
     }
 
-    public void send(UserGameCommand.CommandType CONNECT, String authToken, int gameID) throws ClientException {
+    public void send(UserGameCommand.CommandType connect, String authToken, int gameID) throws ClientException {
         try {
-            UserGameCommand userGameCommand = new UserGameCommand(CONNECT,authToken, gameID);
+            UserGameCommand userGameCommand = new UserGameCommand(connect,authToken, gameID);
             session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
         }
         catch(IOException e){
             throw new ClientException("IOException issue in send()", e);
         }
     }
-    public void sendLeave(UserGameCommand.CommandType LEAVE, String authToken, int gameID, String color) throws ClientException {
+    public void sendLeave(UserGameCommand.CommandType leave, String authToken, int gameID, String color) throws ClientException {
         try {
-            UserGameCommand userGameCommand = new LeaveCommand(LEAVE,authToken, gameID, color);
+            UserGameCommand userGameCommand = new LeaveCommand(leave,authToken, gameID, color);
             session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
         }
         catch(IOException e){
             throw new ClientException("IOException issue in send()", e);
         }
     }
-    public void sendMakeMove(UserGameCommand.CommandType MAKE_MOVE, String authToken, int gameID,ChessMove makeMove) throws ClientException {
+    public void sendMakeMove(UserGameCommand.CommandType make_move, String authToken, int gameID,ChessMove makeMove) throws ClientException {
         if (checkMateOrStale){
             throw new ClientException("You can't make moves after the game is over");
         }
         try {
-            UserGameCommand userGameCommand = new MakeMoveCommand(MAKE_MOVE,authToken, gameID, makeMove);
+            UserGameCommand userGameCommand = new MakeMoveCommand(make_move,authToken, gameID, makeMove);
             session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
         }
         catch(IOException e){

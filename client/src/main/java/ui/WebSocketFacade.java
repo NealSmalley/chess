@@ -93,12 +93,12 @@ public class WebSocketFacade extends Endpoint{
             throw new ClientException("IOException issue in send()", e);
         }
     }
-    public void sendMakeMove(UserGameCommand.CommandType make_move, String authToken, int gameID,ChessMove makeMove) throws ClientException {
+    public void sendMakeMove(UserGameCommand.CommandType makemove, String authToken, int gameID,ChessMove makeMove) throws ClientException {
         if (checkMateOrStale){
             throw new ClientException("You can't make moves after the game is over");
         }
         try {
-            UserGameCommand userGameCommand = new MakeMoveCommand(make_move,authToken, gameID, makeMove);
+            UserGameCommand userGameCommand = new MakeMoveCommand(makemove,authToken, gameID, makeMove);
             session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
         }
         catch(IOException e){

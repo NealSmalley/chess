@@ -26,6 +26,7 @@ import java.net.URI;
 public class WebSocketFacade extends Endpoint{
     public Session session;
     public LoginClient loginClient;
+    private boolean checkMateOrStale = false;
 
     public WebSocketFacade(String url, LoginClient loginClient) throws ClientException {
         try {
@@ -61,6 +62,10 @@ public class WebSocketFacade extends Endpoint{
                         ServerMessageNotification notificationMessage = new Gson().fromJson(message, ServerMessageNotification.class);
                         String messageReceived = notificationMessage.getMessage();
                         System.out.println("Notification: "+ messageReceived);
+                        //checkmate or stalemate
+                        if (messageReceived.contains("checkmate") || messageReceived.contains("stalemate")){
+                            checkMateOrStale = true;
+                        }
                     }
                 }
             });
@@ -89,6 +94,9 @@ public class WebSocketFacade extends Endpoint{
         }
     }
     public void sendMakeMove(UserGameCommand.CommandType MAKE_MOVE, String authToken, int gameID,ChessMove makeMove) throws ClientException {
+        if (checkMateOrStale){
+            throw new ClientException("You can't make moves after the game is over");
+        }
         try {
             UserGameCommand userGameCommand = new MakeMoveCommand(MAKE_MOVE,authToken, gameID, makeMove);
             session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));

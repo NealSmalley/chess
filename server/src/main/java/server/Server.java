@@ -161,13 +161,18 @@ public class Server {
                 String startPoint = toChessNotation(startPosition);
                 String endPoint = toChessNotation(endPosition);
                 invalidMoveOpp(username, gameData, game);
-
                 game.makeMove(makeMove);
                 GameData gameDataUpdated = gameDao.updategame(gameData);
                 List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
                 everyonePlayerLoadGame(listGamePlayers, game);
                 String message = username+" moved from " + startPoint + " to " + endPoint;
                 everyoneExceptCurPlayer(gameID, wsMessageContext, message);
+
+                boolean checkMateStatus = checkMateChecker(game, gameDataUpdated, listGamePlayers, wsMessageContext);
+                if (!checkMateStatus){
+                    checkChecker(game, gameDataUpdated, listGamePlayers, wsMessageContext);
+                    staleChecker(game, gameDataUpdated, listGamePlayers, wsMessageContext);
+                }
             }
             catch (InvalidMoveException | DataAccessException e){
                 System.out.println(e.getMessage());
@@ -221,8 +226,62 @@ public class Server {
         //wsMessageContext.send("Server side: Websocket response:" + wsMessageContext.message());
         //wsMessageContext.send("LOAD_GAME");
     }
+    private boolean checkMateChecker(ChessGame game, GameData gameDataUpdated, List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext){
+        if (game.isInCheckmate(ChessGame.TeamColor.WHITE)){
+            String checkUser = gameDataUpdated.whiteUsername();
+            String checkMessage = checkUser + " is in checkmate. Game Over.";
+            everyonePlayerNotification(listGamePlayers,wsMessageContext, checkMessage);
+            return true;
+        }
+        if (game.isInCheckmate(ChessGame.TeamColor.BLACK)){
+            String checkUser = gameDataUpdated.blackUsername();
+            String checkMessage = checkUser + " is in checkmate. Game Over.";
+            everyonePlayerNotification(listGamePlayers,wsMessageContext, checkMessage);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    private boolean checkChecker(ChessGame game, GameData gameDataUpdated, List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext){
+        //in check message
+        if (game.isInCheck(ChessGame.TeamColor.WHITE)){
+            String checkUser = gameDataUpdated.whiteUsername();
+            String checkMessage = checkUser + " is in check";
+            everyonePlayerNotification(listGamePlayers,wsMessageContext, checkMessage);
+            return true;
+        }
+        if (game.isInCheck(ChessGame.TeamColor.BLACK)){
+            String checkUser = gameDataUpdated.blackUsername();
+            String checkMessage = checkUser + " is in check";
+            everyonePlayerNotification(listGamePlayers,wsMessageContext, checkMessage);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    private boolean staleChecker(ChessGame game, GameData gameDataUpdated, List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext) {
+        //stalemate checker
+        if (game.isInStalemate(ChessGame.TeamColor.WHITE)){
+            String staleUser = gameDataUpdated.whiteUsername();
+            String staleMessage = staleUser + " is in check";
+            everyonePlayerNotification(listGamePlayers,wsMessageContext, staleMessage);
+            return true;
+        }
+        if (game.isInStalemate(ChessGame.TeamColor.BLACK)){
+            String staleUser = gameDataUpdated.blackUsername();
+            String staleMessage = staleUser + " is in check";
+            everyonePlayerNotification(listGamePlayers,wsMessageContext, staleMessage);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 
-    private String toChessNotation(ChessPosition coordinates){
+
+        private String toChessNotation(ChessPosition coordinates){
         int row = coordinates.getRow();
         int col = coordinates.getColumn();
         String column = switch(col){

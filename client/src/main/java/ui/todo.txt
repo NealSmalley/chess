@@ -14,8 +14,9 @@ Notifications:
 4. checkmate notification (player's name) (done)
     - no moves after checkmate (done)
 5. stalemate notification
-    - no moves after stalemate
+    - no moves after stalemate (done)
 
-6. Doesn't throw error when it isn't your turn to move
+6. Doesn't throw error when it isn't your turn to move (done)
+7. test promotion piece
 
 6. do server tests again to see if they work

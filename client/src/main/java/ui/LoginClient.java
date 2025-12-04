@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
-import chess.InvalidMoveException;
+import chess.*;
 import model.AuthData;
 import model.client.LoginData;
 import model.GameData;
@@ -353,8 +350,9 @@ public class LoginClient {
     }
 
     public String makeMove(String... params) throws ClientException{
+
         // 2a -> 3a
-        if (params.length == 2) {
+        if ((params.length >= 2) && (params.length <= 3)) {
             int startRow = Integer.parseInt(params[0].substring(0,1));
             char startColChar = params[0].charAt(1);
             int startCol = charToInt(startColChar);
@@ -371,13 +369,30 @@ public class LoginClient {
             if (hasResigned){
                 throw new ClientException("Can't make move player has already resigned");
             }
+            ChessBoard board = chessGame.getBoard();
+            ChessPiece piece = board.getPiece(startPosition);
+            ChessPiece.PieceType pieceType = piece.getPieceType();
+            ChessPiece.PieceType promotionPiece = null;
+            if (pieceType == ChessPiece.PieceType.PAWN){
+                if (endRow == 8 || endRow == 1){
+                    promotionPiece = switch(params[2]) {
+                        case "king" -> ChessPiece.PieceType.KING;
+                        case "queen" -> ChessPiece.PieceType.QUEEN;
+                        case "bishop" -> ChessPiece.PieceType.BISHOP;
+                        case "knight" -> ChessPiece.PieceType.KNIGHT;
+                        case "rook" -> ChessPiece.PieceType.ROOK;
+                        case "pawn" -> ChessPiece.PieceType.PAWN;
+                        default -> ChessPiece.PieceType.PAWN;
+                    };
+                }
+            }
             //Do I need to add something for the promotionPiece parameter???
-            ChessMove move = new ChessMove(startPosition, endPosition, null);
+            ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
             try {
-                chessGame.makeMove(new ChessMove(startPosition, endPosition, null));
+                chessGame.makeMove(new ChessMove(startPosition, endPosition, promotionPiece));
             }
             catch (InvalidMoveException e){
-                throw new ClientException("Invalid Move");
+                throw new ClientException("Invalid Move :"+e);
             }
             ws.sendMakeMove(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID,move);
         }

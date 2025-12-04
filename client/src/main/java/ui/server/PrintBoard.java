@@ -2,10 +2,7 @@ package ui.server;
 
 import chess.*;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
 
 import static ui.EscapeSequences.*;
 
@@ -181,25 +178,10 @@ public class PrintBoard {
         }
     }
     public void rowChess(Stack<String> rowPopStack, Stack<String> rowPushStack, String spaceColor){
+        List<Integer> coordinateList = sharedRowChess();
+        int row = coordinateList.get(0);
+        int col = coordinateList.get(1);
         ChessBoard board = game.getBoard();
-        int row;
-        int col;
-        //if white start 64 decrement
-        if (playerColor.equals("white")){
-            row = 8-(innercellCount / 8);
-            //col = 8-(innercellCount % 8);
-            col = (innercellCount % 8) + 1;
-        }
-        //if black start 1 increment
-        else {
-            row = (innercellCount / 8) + 1;
-            //col = (innercellCount % 8) + 1;
-            col = 8-(innercellCount % 8);
-        }
-        innercellCount++;
-//        if (col == 0){
-//            col++;
-//        }
         ChessPiece piece = board.getPiece(new ChessPosition(row,col));
         //empty spaces
         String printTextColor;
@@ -215,39 +197,20 @@ public class PrintBoard {
             else {
                 printTextColor = oppositeTextColor;
             }
-            String letter = switch (pieceType){
-                case ChessPiece.PieceType.KING -> "K";
-                case ChessPiece.PieceType.QUEEN -> "Q";
-                case ChessPiece.PieceType.BISHOP -> "B";
-                case ChessPiece.PieceType.KNIGHT -> "N";
-                case ChessPiece.PieceType.ROOK -> "R";
-                case ChessPiece.PieceType.PAWN -> "P";
-            };
+
+            String letter = pieceToLetter(pieceType);
 
             System.out.print(EMPTY + spaceColor + printTextColor + letter);
         }
         row(rowPopStack, rowPushStack);
     }
     public void rowChessHighlight(Stack<String> rowPopStack, Stack<String> rowPushStack, String spaceColor, Collection<ChessMove> validMoves){
+        List<Integer> coordinateList = sharedRowChess();
+        int row = coordinateList.get(0);
+        int col = coordinateList.get(1);
         ChessBoard board = game.getBoard();
-        int row;
-        int col;
-        //if white start 64 decrement
-        if (playerColor.equals("white")){
-            row = 8-(innercellCount / 8);
-            //col = 8-(innercellCount % 8);
-            col = (innercellCount % 8) + 1;
-        }
-        //if black start 1 increment
-        else {
-            row = (innercellCount / 8) + 1;
-            //col = (innercellCount % 8) + 1;
-            col = 8-(innercellCount % 8);
-        }
-        innercellCount++;
-        if (col == 0){
-            col++;
-        }
+        ChessPiece piece = board.getPiece(new ChessPosition(row,col));
+
         for (ChessMove move : validMoves) {
             ChessPosition startPosition = move.getStartPosition();
             ChessPosition endPosition = move.getEndPosition();
@@ -264,7 +227,7 @@ public class PrintBoard {
             }
 
         }
-        ChessPiece piece = board.getPiece(new ChessPosition(row,col));
+
         //empty spaces
         String printTextColor;
         if (piece == null){
@@ -279,17 +242,44 @@ public class PrintBoard {
             else {
                 printTextColor = oppositeTextColor;
             }
-            String letter = switch (pieceType){
-                case ChessPiece.PieceType.KING -> "K";
-                case ChessPiece.PieceType.QUEEN -> "Q";
-                case ChessPiece.PieceType.BISHOP -> "B";
-                case ChessPiece.PieceType.KNIGHT -> "N";
-                case ChessPiece.PieceType.ROOK -> "R";
-                case ChessPiece.PieceType.PAWN -> "P";
-            };
+
+            String letter = pieceToLetter(pieceType);
 
             System.out.print(EMPTY + spaceColor + printTextColor + letter);
         }
         row(rowPopStack, rowPushStack);
+    }
+
+    private List<Integer> sharedRowChess(){
+        List<Integer> coordinateList = new ArrayList<>();
+
+        int row;
+        int col;
+        //if white start 64 decrement
+        if (playerColor.equals("white")){
+            row = 8-(innercellCount / 8);
+            col = (innercellCount % 8) + 1;
+        }
+        //if black start 1 increment
+        else {
+            row = (innercellCount / 8) + 1;
+            col = 8-(innercellCount % 8);
+        }
+        innercellCount++;
+        coordinateList.add(row);
+        coordinateList.add(col);
+
+        return coordinateList;
+    }
+    private String pieceToLetter(ChessPiece.PieceType  pieceType){
+        String letter = switch (pieceType){
+            case ChessPiece.PieceType.KING -> "K";
+            case ChessPiece.PieceType.QUEEN -> "Q";
+            case ChessPiece.PieceType.BISHOP -> "B";
+            case ChessPiece.PieceType.KNIGHT -> "N";
+            case ChessPiece.PieceType.ROOK -> "R";
+            case ChessPiece.PieceType.PAWN -> "P";
+        };
+        return letter;
     }
 }

@@ -1,5 +1,4 @@
 package server;
-
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
@@ -29,11 +28,7 @@ public class Server {
     private final UserService userService;
     private final GameService gameService;
     private final AuthDAO authDao;
-    //map of games and players
     private Map<Integer, List<WsMessageContext>> gameMap = new HashMap<>();
-    //list of players
-    //private List<WsMessageContext> playerList = new ArrayList<>();
-
     public Server() {
         try {
             this.userDao = new SQLUserDAO();
@@ -43,18 +38,14 @@ public class Server {
         catch (DataAccessException ex){
             throw new RuntimeException(ex);
         }
-
         this.userService = new UserService(userDao, authDao);
         this.gameService = new GameService(gameDao, authDao);
-
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .ws("/ws", ws -> {
                     ws.onConnect(this::connect);
                     ws.onMessage(this::onMessage);
                     ws.onClose(ctx -> System.out.println("Websocket closed"));
                 });
-
-        // Register your endpoints and exception handlers here.
         //line 1
         javalin.post("/user", this::register);
         javalin.post("/session", this::login);
@@ -63,21 +54,16 @@ public class Server {
         javalin.post("/game", this::createGame);
         javalin.put("/game", this::joinGame);
         javalin.delete("/db", this::clearApplication);
-
     }
-    //websocket methods
-    private void connect(WsConnectContext wsConnectContext) {
+    private void connect(WsConnectContext wsConnectContext) { //websocket methods
         System.out.println("Websocket Connected");
         wsConnectContext.enableAutomaticPings();
     }
     private void onMessage(WsMessageContext wsMessageContext) throws Exception {
         removingClosedPlayers();
-        //deserializes the wsMessageContext.message()
-        UserGameCommand userGameCommandObj = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
-        //get the UserGameCommand
-        UserGameCommand.CommandType userGameCommand = userGameCommandObj.getCommandType();
-        //sort based on userGameCommand
-        if (userGameCommand == UserGameCommand.CommandType.CONNECT){
+        UserGameCommand userGameCommandObj = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);//deserializes the wsMessageContext.message()
+        UserGameCommand.CommandType userGameCommand = userGameCommandObj.getCommandType();//get the UserGameCommand
+        if (userGameCommand == UserGameCommand.CommandType.CONNECT){//sort based on userGameCommand
             connect(userGameCommandObj, wsMessageContext);
         }
         else if ((userGameCommand == UserGameCommand.CommandType.MAKE_MOVE)){
@@ -90,15 +76,15 @@ public class Server {
             leave(userGameCommandObj, wsMessageContext);
         }
     }
-    private boolean checkMateChecker(ChessGame game, GameData gameDataUpdated, List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext){
+    private boolean checkMateChecker(ChessGame game, GameData updated, List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext){
         if (game.isInCheckmate(ChessGame.TeamColor.WHITE)){
-            String checkUser = gameDataUpdated.whiteUsername();
+            String checkUser = updated.whiteUsername();
             String checkMessage = checkUser + " is in checkmate. Game Over.";
             everyonePlayerNotification(listGamePlayers,wsMessageContext, checkMessage);
             return true;
         }
         if (game.isInCheckmate(ChessGame.TeamColor.BLACK)){
-            String checkUser = gameDataUpdated.blackUsername();
+            String checkUser = updated.blackUsername();
             String checkMessage = checkUser + " is in checkmate. Game Over.";
             everyonePlayerNotification(listGamePlayers,wsMessageContext, checkMessage);
             return true;
@@ -108,7 +94,6 @@ public class Server {
         }
     }
     private boolean checkChecker(ChessGame game, GameData gameDataUpdated, List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext){
-        //in check message
         if (game.isInCheck(ChessGame.TeamColor.WHITE)){
             String checkUser = gameDataUpdated.whiteUsername();
             String checkMessage = checkUser + " is in check";
@@ -125,16 +110,15 @@ public class Server {
             return false;
         }
     }
-    private boolean staleChecker(ChessGame game, GameData gameDataUpdated, List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext) {
-        //stalemate checker
+    private boolean staleChecker(ChessGame game, GameData updated, List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext) {
         if (game.isInStalemate(ChessGame.TeamColor.WHITE)){
-            String staleUser = gameDataUpdated.whiteUsername();
+            String staleUser = updated.whiteUsername();
             String staleMessage = staleUser + " is in stalemate";
             everyonePlayerNotification(listGamePlayers,wsMessageContext, staleMessage);
             return true;
         }
         if (game.isInStalemate(ChessGame.TeamColor.BLACK)){
-            String staleUser = gameDataUpdated.blackUsername();
+            String staleUser = updated.blackUsername();
             String staleMessage = staleUser + " is in stalemate";
             everyonePlayerNotification(listGamePlayers,wsMessageContext, staleMessage);
             return true;
@@ -159,13 +143,11 @@ public class Server {
         };
         return row+column;
     }
-
     private void hasResigned(boolean hasResigned) throws InvalidMoveException{
         if (hasResigned){
             throw new InvalidMoveException("You can't move after you resigned from the game");
         }
     }
-
     private boolean invalidMoveOpp(String username, GameData gameData, ChessGame game) throws InvalidMoveException{
         if (username.equals(gameData.whiteUsername()) && (game.getTeamTurn() == ChessGame.TeamColor.WHITE)){
             return true;
@@ -176,7 +158,6 @@ public class Server {
             throw new InvalidMoveException("You can't play your opponents pieces");
         }
     }
-
     private void errorMessageSender(Exception e, WsMessageContext wsMessageContext){
         System.out.println(e.getMessage());
         String errorMessage = e.getMessage();
@@ -184,12 +165,10 @@ public class Server {
         String serverSent = new Gson().toJson(serverMessageError);
         wsMessageContext.send(serverSent);
     }
-
     private void everyoneExceptCurPlayer(Integer gameID, WsMessageContext wsMessageContext, String message){
         List<WsMessageContext> gamePlayerList = gameMap.get(gameID);
         for (WsMessageContext player : gamePlayerList){
-            //if in game map
-            if (!player.equals(wsMessageContext)){
+            if (!player.equals(wsMessageContext)){ //if in game map
                 notification(player, message);
             }
         }
@@ -204,7 +183,6 @@ public class Server {
             notification(player, message);
         }
     }
-
     private void removingClosedPlayers() {
         for (int gameID : gameMap.keySet()) {
             if (gameMap.get(gameID) != null) {
@@ -232,7 +210,6 @@ public class Server {
             listGamePlayers.remove(player);
         }
     }
-
     private void notification(WsMessageContext wsMessageContext, String message){
         ServerMessageNotification serverMessage = new ServerMessageNotification(ServerMessage.ServerMessageType.NOTIFICATION, message);
         String serverSent = new Gson().toJson(serverMessage);
@@ -243,53 +220,36 @@ public class Server {
         String serverSentLoadGame = new Gson().toJson(serverMessageLoadGame);
         wsMessageContext.send(serverSentLoadGame);
     }
-
-
-
-// handler register (whole method)
     private void register(Context ctx) {
-        //req = request, res = response
         try {
             Gson serializer = new Gson();
-            //line 2
-            //reads Json req body
-            String reqJson = ctx.body();
+            String reqJson = ctx.body();//line 2  //reads Json req body
             UserData req = serializer.fromJson(reqJson, UserData.class);
-            //pass back an AuthData
-            if (req.username() == null || req.email() == null || req.password() == null){
+            if (req.username() == null || req.email() == null || req.password() == null){ //pass back an AuthData
                 throw new DataAccessException(DataAccessException.PosExc.BadRequest, "username or email or password is null");
             }
-            // call to the service and register
-            //line 3
-            AuthData authData = userService.register(req);
-            //line 13
-            ctx.result(serializer.toJson(authData));
+            AuthData authData = userService.register(req);  //line 3
+            ctx.result(serializer.toJson(authData));//line 13
             ctx.status(200).result();
         }
-        //400
         catch (DataAccessException ex){
-            //400
-            if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(400).json(msg);
+            if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){    //400
+                errorMessage(400, ctx, ex);
             }
-            //403
-            if ((ex.getExc() == DataAccessException.PosExc.Forbidden)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(403).json(msg);
+            if ((ex.getExc() == DataAccessException.PosExc.Forbidden)){     //403
+                errorMessage(403, ctx, ex);
             }
-            //500
-            if ((ex.getExc() == DataAccessException.PosExc.ServerError)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(500).json(msg);
+            if ((ex.getExc() == DataAccessException.PosExc.ServerError)){   //500
+                errorMessage(500, ctx, ex);
             }
         }
-        //403
-        catch (Exception ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            //ctx.status(403).result();
-            ctx.status(403).json(msg);
+        catch (Exception ex){ //403
+            errorMessage(403, ctx, ex);
         }
+    }
+    private void errorMessage(int status, Context ctx, Exception ex){
+        var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
+        ctx.status(status).json(msg);
     }
     private void login(Context ctx){
         try{
@@ -300,17 +260,14 @@ public class Server {
                 throw new DataAccessException(DataAccessException.PosExc.BadRequest, "username or password is null");
             }
             AuthData authData = userService.login(req);
-
             ctx.result(serializer.toJson(authData));
             ctx.status(200).result();
         }
         catch (DataAccessException ex){
             caseBundleBadUnauthServer(ctx, ex);
         }
-        //403
-        catch (Exception ex){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(403).json(msg);
+        catch (Exception ex){ //403
+            errorMessage(403, ctx, ex);
         }
     }
     private void logout(Context ctx) {
@@ -321,25 +278,18 @@ public class Server {
             userService.logout(authdata);
             ctx.status(200).result();
         }
-        //401
-        catch (DataAccessException ex){
+        catch (DataAccessException ex){ //401
             catchBundleUnauthServer(ctx, ex);
         }
-
     }
     public void catchBundleUnauthServer(Context ctx, DataAccessException ex){
-        //401
-        if ((ex.getExc() == DataAccessException.PosExc.Unauthorized)) {
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(401).json(msg);
+        if ((ex.getExc() == DataAccessException.PosExc.Unauthorized)) {//401
+            errorMessage(401, ctx, ex);
         }
-        //500
-        if ((ex.getExc() == DataAccessException.PosExc.ServerError)){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(500).json(msg);
+        if ((ex.getExc() == DataAccessException.PosExc.ServerError)){//500
+            errorMessage(500, ctx, ex);
         }
     }
-
     private void createGame(Context ctx){
         try {
             Gson serializer = new Gson();
@@ -351,126 +301,67 @@ public class Server {
             if (authToken == null){
                 throw new DataAccessException(DataAccessException.PosExc.Unauthorized, "gameName is emptyset or authToken is null");
             }
-
-            //Authenticate Authtoken
-            userService.authenticatUser(authToken);
-            //GameData gamedata = new GameData(null, null, null,gameName, null);
+            userService.authenticatUser(authToken);//Authenticate Authtoken
             GameData gameData = gameService.creategame(gameName);
-
             ctx.result(serializer.toJson(gameData));
             ctx.status(200).result();
         }
-
         catch (DataAccessException ex){
             caseBundleBadUnauthServer(ctx, ex);
         }
     }
-    //bundle of catch statements
     public void caseBundleBadUnauthServer(Context ctx, DataAccessException ex){
-        //400
-        if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(400).json(msg);
+        if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){//400
+            errorMessage(400, ctx, ex);
         }
-        //401
-        if (ex.getExc() == DataAccessException.PosExc.Unauthorized) {
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(401).json(msg);
-        }
-        //500
-        if ((ex.getExc() == DataAccessException.PosExc.ServerError)){
-            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(500).json(msg);
-        }
+        catchBundleUnauthServer(ctx, ex);
     }
-
     private void listGame(Context ctx){
         try {
             Gson serializer = new Gson();
             String authToken = ctx.header("authorization");
-            //Authenticate Authtoken
-            userService.authenticatUser(authToken);
-
-            //GameData gamedata = new GameData(null, null, null,gameName, null);
+            userService.authenticatUser(authToken); //Authenticate Authtoken
             HashMap<Integer, GameData> games = gameService.listgames();
-
             Collection<GameData> gameList = games.values();
-            //Map.of("games", gameList) -> GameList
             String json = serializer.toJson(new GameList(gameList));
             ctx.result(json);
             ctx.status(200).result();
         }
-        //401
-        catch (DataAccessException ex){
+        catch (DataAccessException ex){ //401
             catchBundleUnauthServer(ctx, ex);
         }
 
     }
-
-
     private void joinGame(Context ctx){
         try {
             Gson serializer = new Gson();
             String gameInfo = ctx.body();
             JoinGameData info = serializer.fromJson(gameInfo, JoinGameData.class);
             String authToken = ctx.header("authorization");
-
             int gameID = info.gameID();
             String playerColor = info.playerColor();
-
-
             if (gameInfo.equals("{}") || authToken == null || playerColor == null){
                 throw new DataAccessException(DataAccessException.PosExc.BadRequest,"gameinfo{}||authToken,playerColor null");
             }
             if ((!playerColor.equals("BLACK")) && (!playerColor.equals("WHITE"))){
                 throw new DataAccessException(DataAccessException.PosExc.BadRequest, "player color is not black or white");
             }
-
-            //Authenticate Authtoken
-            userService.authenticatUser(authToken);
-
-            //get username
-            String username = userService.getUsernameAuth(authToken);
-
-            //Update
-            GameData updatedGameData = gameService.joingame(gameID, playerColor, username);
+            userService.authenticatUser(authToken); //Authenticate Authtoken
+            String username = userService.getUsernameAuth(authToken);   //get username
+            GameData updatedGameData = gameService.joingame(gameID, playerColor, username); //Update
             ctx.result(serializer.toJson(updatedGameData));
             ctx.status(200).result();
-
         }
         catch (DataAccessException ex){
-            //400
-            if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(400).json(msg);
-            }
-            //401
-            if (ex.getExc() == DataAccessException.PosExc.Unauthorized) {
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(401).json(msg);
-            }
-            //403
-            if (ex.getExc() == DataAccessException.PosExc.Forbidden) {
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(403).json(msg);
-            }
-            //500
-            if ((ex.getExc() == DataAccessException.PosExc.ServerError)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(500).json(msg);
+            caseBundleBadUnauthServer(ctx, ex);
+            if (ex.getExc() == DataAccessException.PosExc.Forbidden) {//403
+                errorMessage(403, ctx, ex);
             }
         }
-
-        //403
-        catch (Exception ex){
-            var errormsg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-            ctx.status(403).json(errormsg);
+        catch (Exception ex){//403
+            errorMessage(403, ctx, ex);
         }
     }
-
-
-
-    //hander clear application
     public void clearApplication(Context ctx) throws DataAccessException {
         try {
             userService.clear();
@@ -478,24 +369,15 @@ public class Server {
             ctx.status(200);
         }
         catch (DataAccessException ex){
-            //400
-            if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(400).json(msg);
+            if ((ex.getExc() == DataAccessException.PosExc.BadRequest)){//400
+                errorMessage(400, ctx, ex);
             }
-            //500
-            if ((ex.getExc() == DataAccessException.PosExc.ServerError)){
-                var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-                ctx.status(500).json(msg);
+            if ((ex.getExc() == DataAccessException.PosExc.ServerError)){//500
+                errorMessage(500, ctx, ex);
             }
         }
     }
-
-
-
     public int run(int desiredPort) {
-
-
         javalin.start(desiredPort);
         return javalin.port();
     }
@@ -511,7 +393,6 @@ public class Server {
             ServerMessageLoadGame serverMessage = new ServerMessageLoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
             String serverSent = new Gson().toJson(serverMessage);
             wsMessageContext.send(serverSent);
-
             String joinColor;
             String role;
             if (gameData.whiteUsername().equals(username)){
@@ -526,13 +407,11 @@ public class Server {
                 joinColor = "";
                 role = " joined as observer";
             }
-            //game exists and has other players
-            if (gameMap.get(gameID) != null) {
+            if (gameMap.get(gameID) != null) {  //game exists and has other players
                 String message = username+role+joinColor;
                 everyoneExceptCurPlayer(gameID, wsMessageContext, message);
             }
-            //game doesn't exist yet
-            else if (gameMap.get(gameID) == null){
+            else if (gameMap.get(gameID) == null){ //game doesn't exist yet
                 gameMap.put(gameID, new ArrayList<>());
             }
             gameMap.get(gameID).add(wsMessageContext);
@@ -551,7 +430,6 @@ public class Server {
             String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
             MakeMoveCommand makeMoveCommand = new Gson().fromJson(wsMessageContext.message(), MakeMoveCommand.class);
             ChessMove makeMove = makeMoveCommand.getMakeMove();
-            String move = makeMove.toString();
             ChessPosition startPosition = makeMove.getStartPosition();
             ChessPosition endPosition = makeMove.getEndPosition();
             String startPoint = toChessNotation(startPosition);
@@ -570,14 +448,12 @@ public class Server {
             }
         }
         catch (InvalidMoveException | DataAccessException e){
-            System.out.println(e.getMessage());
             errorMessageSender(e,wsMessageContext);
         }
     }
     private void leave(UserGameCommand userGameCommandObj, WsMessageContext wsMessageContext) throws Exception {
         int gameID = userGameCommandObj.getGameID();
         GameData gameData = gameService.getgame(gameID);
-        ChessGame game = gameData.game();
         String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
         try {
             String message = "leave " + username;
@@ -587,7 +463,6 @@ public class Server {
             GameData gameDataUpdated = gameDao.updategameplayers(gameData, username);
         }
         catch (InvalidMoveException | DataAccessException e){
-            System.out.println(e.getMessage());
             errorMessageSender(e,wsMessageContext);
         }
     }
@@ -610,7 +485,6 @@ public class Server {
             GameData gameDataUpdated = gameDao.updategameresigned(gameData);
         }
         catch (InvalidMoveException e){
-            System.out.println(e.getMessage());
             errorMessageSender(e,wsMessageContext);
         }
     }

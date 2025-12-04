@@ -118,9 +118,9 @@ public class LoginClient {
         if (params.length == 3){
             UserData userdata = toUserData(params);
             AuthData authdata = serverFacade.register(userdata);
-            loginStatus = LoginStatus.SIGNEDIN;
             authToken = authdata.authToken();
             userName = authdata.username();
+            loginStatus = LoginStatus.SIGNEDIN;
             return String.format("You registered as %s.", userName);
         }
         throw new ClientException("Expected: <yourname password and email>");
@@ -138,7 +138,7 @@ public class LoginClient {
         return new UserData(username, password, email);
     }
     private LoginData toLoginData(String... params){
-        loginStatus = LoginStatus.SIGNEDIN;
+        //loginStatus = LoginStatus.SIGNEDIN;
         String username = params[0];
         String password = params[1];
         return new LoginData(username, password);
@@ -146,11 +146,11 @@ public class LoginClient {
 
     public String login(String... params) throws ClientException {
         if (params.length == 2){
-            loginStatus = LoginStatus.SIGNEDIN;
             LoginData logindata = toLoginData(params);
             AuthData authdata = serverFacade.login(logindata);
             authToken = authdata.authToken();
             userName = String.join("-", params);
+            loginStatus = LoginStatus.SIGNEDIN;
             return String.format("Logged in as %s.", userName);
         }
         throw new ClientException("Expected: <yourname and password>");
@@ -242,8 +242,8 @@ public class LoginClient {
         throw new ClientException("Expected: <gameNumber>");
     }
     public String logout() throws ClientException {
-        loginStatus = LoginStatus.SIGNEDOUT;
         serverFacade.logout();
+        loginStatus = LoginStatus.SIGNEDOUT;
         return "logout success";
     }
     private boolean isLoggedIn(LoginStatus loginStatus){
@@ -372,6 +372,22 @@ public class LoginClient {
             ChessBoard board = chessGame.getBoard();
             ChessPiece piece = board.getPiece(startPosition);
             ChessPiece.PieceType pieceType = piece.getPieceType();
+            //errors
+            ChessGame.TeamColor pieceColor = piece.getTeamColor();
+            ChessGame.TeamColor resultingPlayerColor = switch (color){
+                case "white" -> ChessGame.TeamColor.WHITE;
+                case "black" -> ChessGame.TeamColor.BLACK;
+                default -> throw new ClientException("There is an issue with the static color");
+            };
+            if (!pieceColor.equals(resultingPlayerColor)){
+                throw new ClientException("You can't move pieces that aren't your color");
+            }
+            if (pieceColor.equals(resultingPlayerColor)){
+                if (!chessGame.getTeamTurn().equals(resultingPlayerColor)){
+                    throw new ClientException("You can't move pieces when it isn't your turn");
+                }
+            }
+            //promotionPiece
             ChessPiece.PieceType promotionPiece = null;
             if (pieceType == ChessPiece.PieceType.PAWN){
                 if (endRow == 8 || endRow == 1){
@@ -386,7 +402,6 @@ public class LoginClient {
                     };
                 }
             }
-            //Do I need to add something for the promotionPiece parameter???
             ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
             try {
                 chessGame.makeMove(new ChessMove(startPosition, endPosition, promotionPiece));
@@ -394,17 +409,16 @@ public class LoginClient {
             catch (InvalidMoveException e){
                 throw new ClientException("Invalid Move :"+e);
             }
+
             ws.sendMakeMove(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID,move);
         }
         return "";
     }
 
     public String legalMoves(String... params) throws ClientException {
-        System.out.println("legalMoves runs()");
         GameData game = currentGame();
         ChessGame chessGame = game.game();
         if (params.length == 1) {
-            System.out.println("if statement is running");
             int startRow = Integer.parseInt(params[0].substring(0,1));
             char startColChar = params[0].charAt(1);
             int startCol = charToInt(startColChar);

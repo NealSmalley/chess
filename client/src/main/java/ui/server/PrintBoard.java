@@ -76,7 +76,6 @@ public class PrintBoard {
         }
     }
     public void printBoardHighlight(ChessGame game,String color, Collection<ChessMove> validMoves){
-        System.out.println("printBoardHighlight is running");
         this.validMoves = validMoves;
         highlight = true;
         printBoard(game, color);

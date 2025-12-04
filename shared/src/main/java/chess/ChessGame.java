@@ -135,6 +135,10 @@ public class ChessGame {
             throw new InvalidMoveException("Illegal wrong turn");
         }
 
+//        if (!(startPiece.getTeamColor().equals(getTeamTurn()))){
+//            throw new InvalidMoveException("Can't move for opposite team");
+//        }
+
         boolean validMatch = false;
         for (ChessMove validMov : validMoves) {
             //make the actual move

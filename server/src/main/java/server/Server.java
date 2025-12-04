@@ -61,7 +61,7 @@ public class Server {
     }
     private void onMessage(WsMessageContext wsMessageContext) throws Exception {
         removingClosedPlayers();
-        UserGameCommand userGameCommandObj = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);//deserializes the wsMessageContext.message()
+        UserGameCommand userGameCommandObj = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
         UserGameCommand.CommandType userGameCommand = userGameCommandObj.getCommandType();//get the UserGameCommand
         if (userGameCommand == UserGameCommand.CommandType.CONNECT){//sort based on userGameCommand
             connect(userGameCommandObj, wsMessageContext);

@@ -9,16 +9,12 @@ import dataaccess.*;
 import dataaccess.DataAccessException;
 import io.javalin.*;
 import io.javalin.http.*;
-
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsMessageContext;
 import model.*;
-
 import service.GameService;
 import service.UserService;
-
 import java.util.*;
-
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
@@ -27,7 +23,6 @@ import websocket.messages.ServerMessageLoadGame;
 import websocket.messages.ServerMessageNotification;
 
 public class Server {
-
     private final Javalin javalin;
     private final UserDAO userDao;
     private final GameDAO gameDao;
@@ -39,7 +34,6 @@ public class Server {
     //list of players
     //private List<WsMessageContext> playerList = new ArrayList<>();
 
-
     public Server() {
         try {
             this.userDao = new SQLUserDAO();
@@ -50,7 +44,6 @@ public class Server {
             throw new RuntimeException(ex);
         }
 
-
         this.userService = new UserService(userDao, authDao);
         this.gameService = new GameService(gameDao, authDao);
 
@@ -60,9 +53,6 @@ public class Server {
                     ws.onMessage(this::onMessage);
                     ws.onClose(ctx -> System.out.println("Websocket closed"));
                 });
-
-
-
 
         // Register your endpoints and exception handlers here.
         //line 1
@@ -75,12 +65,11 @@ public class Server {
         javalin.delete("/db", this::clearApplication);
 
     }
-    //websocket methds
+    //websocket methods
     private void connect(WsConnectContext wsConnectContext) {
         System.out.println("Websocket Connected");
         wsConnectContext.enableAutomaticPings();
     }
-    //ctx -> ctx.send("Websocket response:" + ctx.message()
     private void onMessage(WsMessageContext wsMessageContext) throws Exception {
         removingClosedPlayers();
         //deserializes the wsMessageContext.message()
@@ -154,9 +143,7 @@ public class Server {
             return false;
         }
     }
-
-
-        private String toChessNotation(ChessPosition coordinates){
+    private String toChessNotation(ChessPosition coordinates){
         int row = coordinates.getRow();
         int col = coordinates.getColumn();
         String column = switch(col){
@@ -474,7 +461,6 @@ public class Server {
             }
         }
 
-//        }
         //403
         catch (Exception ex){
             var errormsg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
@@ -502,8 +488,6 @@ public class Server {
                 var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
                 ctx.status(500).json(msg);
             }
-//            var msg = String.format("{\"message\": \"Error: %s\"}", ex.getMessage());
-//            ctx.status(400).json(msg);
         }
     }
 

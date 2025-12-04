@@ -88,8 +88,6 @@ public class PrintBoard {
         playerColorVars(playerColor);
         //fill colStack
         List.of("boarder","2nd","1st","2nd","1st","2nd","1st","2nd","1st","boarder").forEach(colStack::push);
-        //boarder,white,black,white,black,white,black,white,black, boarder
-        //List.of("boarder","white","black","white","black","white","black","white","black","boarder").forEach(firstRowColors::push);
         currentColOptions();
     }
     //loops through columns
@@ -197,9 +195,7 @@ public class PrintBoard {
             else {
                 printTextColor = oppositeTextColor;
             }
-
             String letter = pieceToLetter(pieceType);
-
             System.out.print(EMPTY + spaceColor + printTextColor + letter);
         }
         row(rowPopStack, rowPushStack);
@@ -225,7 +221,6 @@ public class PrintBoard {
             if ((endRow == row) && (endCol == col)){
                 spaceColor = SET_BG_COLOR_GREEN;
             }
-
         }
 
         //empty spaces

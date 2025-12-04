@@ -265,13 +265,13 @@ public class Server {
         //stalemate checker
         if (game.isInStalemate(ChessGame.TeamColor.WHITE)){
             String staleUser = gameDataUpdated.whiteUsername();
-            String staleMessage = staleUser + " is in check";
+            String staleMessage = staleUser + " is in stalemate";
             everyonePlayerNotification(listGamePlayers,wsMessageContext, staleMessage);
             return true;
         }
         if (game.isInStalemate(ChessGame.TeamColor.BLACK)){
             String staleUser = gameDataUpdated.blackUsername();
-            String staleMessage = staleUser + " is in check";
+            String staleMessage = staleUser + " is in stalemate";
             everyonePlayerNotification(listGamePlayers,wsMessageContext, staleMessage);
             return true;
         }

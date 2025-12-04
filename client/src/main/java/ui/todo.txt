@@ -10,8 +10,12 @@ Notifications:
 2. observe notification should include observer name (done)
    - Something is wrong with my observe where it won't print the game (done)
    - it also notifies other players as join instead of observed (done)
-3. check notification (player's name)
-4. checkmate notification (player's name)
-    - no moves after checkmate
+3. check notification (player's name) (done)
+4. checkmate notification (player's name) (done)
+    - no moves after checkmate (done)
+5. stalemate notification
+    - no moves after stalemate
 
-5. do server tests again to see if they work
+6. Doesn't throw error when it isn't your turn to move
+
+6. do server tests again to see if they work

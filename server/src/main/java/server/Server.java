@@ -82,7 +82,6 @@ public class Server {
     }
     //ctx -> ctx.send("Websocket response:" + ctx.message()
     private void onMessage(WsMessageContext wsMessageContext) throws Exception {
-
         removingClosedPlayers();
         //deserializes the wsMessageContext.message()
         UserGameCommand userGameCommandObj = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
@@ -90,141 +89,17 @@ public class Server {
         UserGameCommand.CommandType userGameCommand = userGameCommandObj.getCommandType();
         //sort based on userGameCommand
         if (userGameCommand == UserGameCommand.CommandType.CONNECT){
-            try {
-                int gameID = userGameCommandObj.getGameID();
-                GameData gameData = gameService.getgame(gameID);
-                ChessGame game = gameData.game();
-                String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
-                ServerMessageLoadGame serverMessage = new ServerMessageLoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
-                String serverSent = new Gson().toJson(serverMessage);
-                wsMessageContext.send(serverSent);
-
-                String joinColor;
-                String role;
-                if (gameData.whiteUsername().equals(username)){
-                    joinColor = "white";
-                    role = " joined as ";
-                }
-                else if (gameData.blackUsername().equals(username)){
-                    joinColor = "black";
-                    role = " joined as ";
-                }
-                else {
-                    joinColor = "";
-                    role = " joined as observer";
-                }
-
-                //game exists and has other players
-                if (gameMap.get(gameID) != null) {
-                    String message = username+role+joinColor;
-                    everyoneExceptCurPlayer(gameID, wsMessageContext, message);
-                }
-                //game doesn't exist yet
-                else if (gameMap.get(gameID) == null){
-                    gameMap.put(gameID, new ArrayList<>());
-                }
-                gameMap.get(gameID).add(wsMessageContext);
-//                //game has other players
-//                if (!playerList.isEmpty()) {
-//                    String message = "join "+username+" color";
-//                    everyoneExceptCurPlayer(gameID, wsMessageContext, message);
-//
-//                }
-                //create gameid as key and list of players as values
-                //playerList.add(wsMessageContext);
-
-                //create gameid as key and list of players as values
-                //playerList.add(wsMessageContext);
-
-            }
-            catch(Exception e){
-                System.out.println(e.getMessage());
-                String errorMessage = e.getMessage();
-                ServerMessageError serverMessageError = new ServerMessageError(ServerMessage.ServerMessageType.ERROR, errorMessage);
-                String serverSent = new Gson().toJson(serverMessageError);
-                wsMessageContext.send(serverSent);
-            }
+            connect(userGameCommandObj, wsMessageContext);
         }
         else if ((userGameCommand == UserGameCommand.CommandType.MAKE_MOVE)){
-            int gameID = userGameCommandObj.getGameID();
-            GameData gameData = gameService.getgame(gameID);
-            ChessGame game = gameData.game();
-            try {
-                boolean hasResigned = game.getHasResigned();
-                hasResigned(hasResigned);
-                String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
-                MakeMoveCommand makeMoveCommand = new Gson().fromJson(wsMessageContext.message(), MakeMoveCommand.class);
-                ChessMove makeMove = makeMoveCommand.getMakeMove();
-                String move = makeMove.toString();
-                ChessPosition startPosition = makeMove.getStartPosition();
-                ChessPosition endPosition = makeMove.getEndPosition();
-                String startPoint = toChessNotation(startPosition);
-                String endPoint = toChessNotation(endPosition);
-                invalidMoveOpp(username, gameData, game);
-                game.makeMove(makeMove);
-                GameData gameDataUpdated = gameDao.updategame(gameData);
-                List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
-                everyonePlayerLoadGame(listGamePlayers, game);
-                String message = username+" moved from " + startPoint + " to " + endPoint;
-                everyoneExceptCurPlayer(gameID, wsMessageContext, message);
-
-                boolean checkMateStatus = checkMateChecker(game, gameDataUpdated, listGamePlayers, wsMessageContext);
-                if (!checkMateStatus){
-                    checkChecker(game, gameDataUpdated, listGamePlayers, wsMessageContext);
-                    staleChecker(game, gameDataUpdated, listGamePlayers, wsMessageContext);
-                }
-            }
-            catch (InvalidMoveException | DataAccessException e){
-                System.out.println(e.getMessage());
-                errorMessageSender(e,wsMessageContext);
-            }
+            makeMethod(userGameCommandObj, wsMessageContext);
         }
-
         else if (userGameCommand == UserGameCommand.CommandType.RESIGN){
-            int gameID = userGameCommandObj.getGameID();
-            GameData gameData = gameService.getgame(userGameCommandObj.getGameID());
-            ChessGame game = gameData.game();
-            String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
-            try {
-                if (!username.equals(gameData.whiteUsername()) && !username.equals(gameData.blackUsername())) {
-                    throw new InvalidMoveException("Can't resign as a observer.");
-                }
-                if (game.getHasResigned()) {
-                    throw new InvalidMoveException("Can't resign twice");
-                }
-                String message = "resign " + username;
-                List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
-                everyonePlayerNotification(listGamePlayers,wsMessageContext, message);
-                game.setHasResigned(true);
-                GameData gameDataUpdated = gameDao.updategameresigned(gameData);
-            }
-            catch (InvalidMoveException e){
-                System.out.println(e.getMessage());
-                errorMessageSender(e,wsMessageContext);
-            }
+            resign(userGameCommandObj, wsMessageContext);
         }
         else if (userGameCommand == UserGameCommand.CommandType.LEAVE){
-            int gameID = userGameCommandObj.getGameID();
-            GameData gameData = gameService.getgame(gameID);
-            ChessGame game = gameData.game();
-            String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
-            try {
-                String message = "leave " + username;
-                List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
-                everyoneExceptCurPlayer(gameID, wsMessageContext, message);
-                removingAfterLeave(listGamePlayers, wsMessageContext);
-                GameData gameDataUpdated = gameDao.updategameplayers(gameData, username);
-            }
-            catch (InvalidMoveException | DataAccessException e){
-                System.out.println(e.getMessage());
-                errorMessageSender(e,wsMessageContext);
-            }
+            leave(userGameCommandObj, wsMessageContext);
         }
-
-
-        //send a serialized server message
-        //wsMessageContext.send("Server side: Websocket response:" + wsMessageContext.message());
-        //wsMessageContext.send("LOAD_GAME");
     }
     private boolean checkMateChecker(ChessGame game, GameData gameDataUpdated, List<WsMessageContext> listGamePlayers, WsMessageContext wsMessageContext){
         if (game.isInCheckmate(ChessGame.TeamColor.WHITE)){
@@ -642,5 +517,121 @@ public class Server {
     }
     public void stop() {
         javalin.stop();
+    }
+    private void connect(UserGameCommand userGameCommandObj, WsMessageContext wsMessageContext){
+        try {
+            int gameID = userGameCommandObj.getGameID();
+            GameData gameData = gameService.getgame(gameID);
+            ChessGame game = gameData.game();
+            String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
+            ServerMessageLoadGame serverMessage = new ServerMessageLoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
+            String serverSent = new Gson().toJson(serverMessage);
+            wsMessageContext.send(serverSent);
+
+            String joinColor;
+            String role;
+            if (gameData.whiteUsername().equals(username)){
+                joinColor = "white";
+                role = " joined as ";
+            }
+            else if (gameData.blackUsername().equals(username)){
+                joinColor = "black";
+                role = " joined as ";
+            }
+            else {
+                joinColor = "";
+                role = " joined as observer";
+            }
+            //game exists and has other players
+            if (gameMap.get(gameID) != null) {
+                String message = username+role+joinColor;
+                everyoneExceptCurPlayer(gameID, wsMessageContext, message);
+            }
+            //game doesn't exist yet
+            else if (gameMap.get(gameID) == null){
+                gameMap.put(gameID, new ArrayList<>());
+            }
+            gameMap.get(gameID).add(wsMessageContext);
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+            String errorMessage = e.getMessage();
+            ServerMessageError serverMessageError = new ServerMessageError(ServerMessage.ServerMessageType.ERROR, errorMessage);
+            String serverSent = new Gson().toJson(serverMessageError);
+            wsMessageContext.send(serverSent);
+        }
+    }
+    private void makeMethod(UserGameCommand userGameCommandObj, WsMessageContext wsMessageContext) throws Exception {
+        int gameID = userGameCommandObj.getGameID();
+        GameData gameData = gameService.getgame(gameID);
+        ChessGame game = gameData.game();
+        try {
+            boolean hasResigned = game.getHasResigned();
+            hasResigned(hasResigned);
+            String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
+            MakeMoveCommand makeMoveCommand = new Gson().fromJson(wsMessageContext.message(), MakeMoveCommand.class);
+            ChessMove makeMove = makeMoveCommand.getMakeMove();
+            String move = makeMove.toString();
+            ChessPosition startPosition = makeMove.getStartPosition();
+            ChessPosition endPosition = makeMove.getEndPosition();
+            String startPoint = toChessNotation(startPosition);
+            String endPoint = toChessNotation(endPosition);
+            invalidMoveOpp(username, gameData, game);
+            game.makeMove(makeMove);
+            GameData gameDataUpdated = gameDao.updategame(gameData);
+            List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
+            everyonePlayerLoadGame(listGamePlayers, game);
+            String message = username+" moved from " + startPoint + " to " + endPoint;
+            everyoneExceptCurPlayer(gameID, wsMessageContext, message);
+            boolean checkMateStatus = checkMateChecker(game, gameDataUpdated, listGamePlayers, wsMessageContext);
+            if (!checkMateStatus){
+                checkChecker(game, gameDataUpdated, listGamePlayers, wsMessageContext);
+                staleChecker(game, gameDataUpdated, listGamePlayers, wsMessageContext);
+            }
+        }
+        catch (InvalidMoveException | DataAccessException e){
+            System.out.println(e.getMessage());
+            errorMessageSender(e,wsMessageContext);
+        }
+    }
+    private void leave(UserGameCommand userGameCommandObj, WsMessageContext wsMessageContext) throws Exception {
+        int gameID = userGameCommandObj.getGameID();
+        GameData gameData = gameService.getgame(gameID);
+        ChessGame game = gameData.game();
+        String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
+        try {
+            String message = "leave " + username;
+            List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
+            everyoneExceptCurPlayer(gameID, wsMessageContext, message);
+            removingAfterLeave(listGamePlayers, wsMessageContext);
+            GameData gameDataUpdated = gameDao.updategameplayers(gameData, username);
+        }
+        catch (InvalidMoveException | DataAccessException e){
+            System.out.println(e.getMessage());
+            errorMessageSender(e,wsMessageContext);
+        }
+    }
+    private void resign(UserGameCommand userGameCommandObj, WsMessageContext wsMessageContext) throws Exception {
+        int gameID = userGameCommandObj.getGameID();
+        GameData gameData = gameService.getgame(userGameCommandObj.getGameID());
+        ChessGame game = gameData.game();
+        String username = userService.getUsernameAuth(userGameCommandObj.getAuthToken());
+        try {
+            if (!username.equals(gameData.whiteUsername()) && !username.equals(gameData.blackUsername())) {
+                throw new InvalidMoveException("Can't resign as a observer.");
+            }
+            if (game.getHasResigned()) {
+                throw new InvalidMoveException("Can't resign twice");
+            }
+            String message = "resign " + username;
+            List<WsMessageContext> listGamePlayers = gameMap.get(gameID);
+            everyonePlayerNotification(listGamePlayers,wsMessageContext, message);
+            game.setHasResigned(true);
+            GameData gameDataUpdated = gameDao.updategameresigned(gameData);
+        }
+        catch (InvalidMoveException e){
+            System.out.println(e.getMessage());
+            errorMessageSender(e,wsMessageContext);
+        }
     }
 }
